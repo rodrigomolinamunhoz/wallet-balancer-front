@@ -9,6 +9,7 @@ import {
 
 import Login from './pages/Login';
 import PainelAnalista from './pages/Painel/Analista';
+import ConvidarCliente from './pages/Painel/Analista/ConvidarCliente';
 
 const MainRoutes = () => {
   return (
@@ -17,6 +18,7 @@ const MainRoutes = () => {
         <Route path="*" element={<h1>página não encontrada</h1>} />
         <Route path="/" element={<Login />} />
         <Route path="painel-analista" element={<PainelAnalista />} />
+        <Route path="convidar-cliente" element={<ConvidarCliente />} />
       </Routes>
     </BrowserRouter>
   );

@@ -1,4 +1,6 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+
 import {
   Box,
   Flex,
@@ -13,6 +15,16 @@ import {
 } from '@chakra-ui/react';
 
 const Navbar = () => {
+  const navigate = useNavigate();
+  const inicio = () =>{
+    navigate('/painel-analista');
+  }
+  const convidarCliente = () =>{
+    navigate('/convidar-cliente');
+  }
+  const sair = () =>{
+    navigate('/');
+  }
   return (
     <Box>
       <Flex
@@ -29,8 +41,8 @@ const Navbar = () => {
         <Image htmlHeight={50} htmlWidth={50} src="./LogoWB.png" alt="Logo" />
         <Flex flex={{ base: 1 }} justify={{ md: 'start' }}>
           <Stack direction={'row'} spacing={4}>
-            <Button
-              onClick={() => {}}
+          <Button
+              onClick={() => inicio()}
               p={2}
               as={'a'}
               fontSize={'sm'}
@@ -39,7 +51,19 @@ const Navbar = () => {
               variant={'link'}
               //color={linkColor}
             >
-              Enviar Convite
+              Início
+            </Button>
+            <Button
+              onClick={() => convidarCliente()}
+              p={2}
+              as={'a'}
+              fontSize={'sm'}
+              fontWeight={400}
+              fontFamily={'heading'}
+              variant={'link'}
+              //color={linkColor}
+            >
+              Convidar Cliente
             </Button>
           </Stack>
         </Flex>
@@ -59,6 +83,7 @@ const Navbar = () => {
           </Text>
           <Button
             //onClick={() => logout()}
+            onClick={() => sair()}
             as={'a'}
             fontSize={'sm'}
             fontWeight={400}

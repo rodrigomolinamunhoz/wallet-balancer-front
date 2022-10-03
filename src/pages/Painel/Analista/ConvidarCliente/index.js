@@ -1,24 +1,46 @@
 import React from 'react';
 import Navbar from '../../../../components/Navbar';
+import { useForm } from 'react-hook-form';
+import * as yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
 
 import {
-    Flex,
-    Box,
-    FormControl,
-    FormLabel,
-    Input,
-    Stack,
-    Button,
-    Heading,
-    useColorModeValue,
-    Select,
-    Image,
-  } from '@chakra-ui/react';
+  Flex,
+  Box,
+  FormControl,
+  FormLabel,
+  Input,
+  Stack,
+  Button,
+  Heading,
+  useColorModeValue,
+  FormErrorMessage,
+  Select,
+  Image,
+} from '@chakra-ui/react';
 
-const ConvidarCliente= () => {
-    return (<>
-        <Navbar />
-        <Flex
+const schema = yup
+  .object({
+    emailConvite: yup.string().required('Campo obrigatório!'),
+  })
+  .required();
+
+const ConvidarCliente = () => {
+  const {
+    handleSubmit,
+    register,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schema),
+  });
+
+  const onSubmit = values => {
+    console.log(values);
+  };
+
+  return (<>
+    <Navbar />
+    <Flex
       minH={'60vh'}
       align={'center'}
       justify={'center'}
@@ -35,27 +57,38 @@ const ConvidarCliente= () => {
           p={8}
         >
           <Stack spacing={4}>
-          <FormControl id="email">
-              <FormLabel>Email</FormLabel>
-              <Input type="email" />
-            </FormControl>
-            <Stack spacing={10}>
-              <Button
-                bg={'blue.400'}
-                color={'white'}
-                _hover={{
-                  bg: 'blue.500',
-                }}
-              >
-                Enviar
-              </Button>
-            </Stack>
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <FormControl id="emailConvite" isInvalid={errors.emailConvite}>
+                <FormLabel>Email</FormLabel>
+                <Input id="emailConvite" type="email" {...register('emailConvite')} />
+                <FormErrorMessage>
+                  {errors.emailConvite && errors.emailConvite.message}
+                </FormErrorMessage>
+              </FormControl>
+              <Stack spacing={10}>
+                <Stack
+                  direction={{ base: 'column', sm: 'row' }}
+                  align={'start'}
+                  justify={'space-between'}
+                ></Stack>
+                <Button
+                  bg={'blue.400'}
+                  color={'white'}
+                  _hover={{
+                    bg: 'blue.500',
+                  }}
+                  type="submit"
+                >
+                  Enviar
+                </Button>
+              </Stack>
+            </form>
           </Stack>
         </Box>
       </Stack>
     </Flex>
-    </>
-    );
+  </>
+  );
 };
 
 export default ConvidarCliente;

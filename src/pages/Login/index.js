@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -26,6 +27,8 @@ const schema = yup
   .required();
 
 const Login = () => {
+  const navigate = useNavigate();
+
   const {
     handleSubmit,
     register,
@@ -36,6 +39,8 @@ const Login = () => {
 
   const onSubmit = values => {
     console.log(values);
+    if (values.tipoAcesso === "1")
+      navigate('/painel-analista');
   };
 
   return (
@@ -63,6 +68,9 @@ const Login = () => {
                 <Select placeholder="Selecione" {...register('tipoAcesso')}>
                   <option key="1" value="1">
                     Analista
+                  </option>
+                  <option key="2" value="2">
+                    Cliente
                   </option>
                 </Select>
                 <FormErrorMessage>

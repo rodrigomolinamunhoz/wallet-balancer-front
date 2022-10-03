@@ -1,3 +1,7 @@
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import * as yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
 import {
   Flex,
   Box,
@@ -10,9 +14,30 @@ import {
   useColorModeValue,
   Select,
   Image,
+  FormErrorMessage,
 } from '@chakra-ui/react';
 
+const schema = yup
+  .object({
+    tipoAcesso: yup.string().required('Campo obrigatório!'),
+    email: yup.string().required('Campo obrigatório!'),
+    senha: yup.string().required('Campo obrigatório!'),
+  })
+  .required();
+
 const Login = () => {
+  const {
+    handleSubmit,
+    register,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schema),
+  });
+
+  const onSubmit = values => {
+    console.log(values);
+  };
+
   return (
     <Flex
       minH={'100vh'}
@@ -32,32 +57,50 @@ const Login = () => {
           p={8}
         >
           <Stack spacing={4}>
-            <FormControl id="tipo-acesso">
-              <Select placeholder="Selecione">
-                <option key="1" value="1">
-                  Analista
-                </option>
-              </Select>
-            </FormControl>
-            <FormControl id="email">
-              <FormLabel>E-mail</FormLabel>
-              <Input type="email" />
-            </FormControl>
-            <FormControl id="password">
-              <FormLabel>Senha</FormLabel>
-              <Input type="password" />
-            </FormControl>
-            <Stack spacing={10}>
-              <Button
-                bg={'blue.400'}
-                color={'white'}
-                _hover={{
-                  bg: 'blue.500',
-                }}
-              >
-                Entrar
-              </Button>
-            </Stack>
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <FormControl id="tipoAcesso" isInvalid={errors.tipoAcesso}>
+                <FormLabel>Tipo Acesso</FormLabel>
+                <Select placeholder="Selecione" {...register('tipoAcesso')}>
+                  <option key="1" value="1">
+                    Analista
+                  </option>
+                </Select>
+                <FormErrorMessage>
+                  {errors.tipoAcesso && errors.tipoAcesso.message}
+                </FormErrorMessage>
+              </FormControl>
+              <FormControl id="email" isInvalid={errors.email}>
+                <FormLabel>E-mail</FormLabel>
+                <Input id="email" {...register('email')} />
+                <FormErrorMessage>
+                  {errors.email && errors.email.message}
+                </FormErrorMessage>
+              </FormControl>
+              <FormControl id="senha" isInvalid={errors.senha}>
+                <FormLabel>Senha</FormLabel>
+                <Input type="password" {...register('senha')} />
+                <FormErrorMessage>
+                  {errors.senha && errors.senha.message}
+                </FormErrorMessage>
+              </FormControl>
+              <Stack spacing={10}>
+                <Stack
+                  direction={{ base: 'column', sm: 'row' }}
+                  align={'start'}
+                  justify={'space-between'}
+                ></Stack>
+                <Button
+                  bg={'blue.400'}
+                  color={'white'}
+                  _hover={{
+                    bg: 'blue.500',
+                  }}
+                  type="submit"
+                >
+                  Entrar
+                </Button>
+              </Stack>
+            </form>
           </Stack>
         </Box>
       </Stack>

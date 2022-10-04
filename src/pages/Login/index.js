@@ -21,7 +21,7 @@ import {
 const schema = yup
   .object({
     tipoAcesso: yup.string().required('Campo obrigatório!'),
-    email: yup.string().required('Campo obrigatório!'),
+    email: yup.string().email('Insira um e-mail válido.').required('Campo obrigatório!'),
     senha: yup.string().required('Campo obrigatório!'),
   })
   .required();

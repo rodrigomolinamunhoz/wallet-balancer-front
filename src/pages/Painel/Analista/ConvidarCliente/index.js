@@ -21,7 +21,7 @@ import {
 
 const schema = yup
   .object({
-    emailConvite: yup.string().required('Campo obrigatório!'),
+    emailConvite: yup.string().email('Insira um e-mail válido.').required('Campo obrigatório!'),
   })
   .required();
 
@@ -60,7 +60,7 @@ const ConvidarCliente = () => {
             <form onSubmit={handleSubmit(onSubmit)}>
               <FormControl id="emailConvite" isInvalid={errors.emailConvite}>
                 <FormLabel>Email</FormLabel>
-                <Input id="emailConvite" type="email" {...register('emailConvite')} />
+                <Input id="emailConvite" {...register('emailConvite')} />
                 <FormErrorMessage>
                   {errors.emailConvite && errors.emailConvite.message}
                 </FormErrorMessage>

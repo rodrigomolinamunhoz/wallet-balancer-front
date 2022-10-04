@@ -16,13 +16,13 @@ import {
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const inicio = () =>{
+  const inicio = () => {
     navigate('/painel-analista');
   }
-  const convidarCliente = () =>{
+  const convidarCliente = () => {
     navigate('/convidar-cliente');
   }
-  const sair = () =>{
+  const sair = () => {
     navigate('/');
   }
   return (
@@ -41,7 +41,7 @@ const Navbar = () => {
         <Image htmlHeight={50} htmlWidth={50} src="./LogoWB.png" alt="Logo" />
         <Flex flex={{ base: 1 }} justify={{ md: 'start' }}>
           <Stack direction={'row'} spacing={4}>
-          <Button
+            <Button
               onClick={() => inicio()}
               p={2}
               as={'a'}
@@ -49,7 +49,7 @@ const Navbar = () => {
               fontWeight={400}
               fontFamily={'heading'}
               variant={'link'}
-              //color={linkColor}
+            //color={linkColor}
             >
               Início
             </Button>
@@ -61,7 +61,7 @@ const Navbar = () => {
               fontWeight={400}
               fontFamily={'heading'}
               variant={'link'}
-              //color={linkColor}
+            //color={linkColor}
             >
               Convidar Cliente
             </Button>

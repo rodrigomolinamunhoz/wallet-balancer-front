@@ -17,11 +17,15 @@ import {
   Image,
   FormErrorMessage,
 } from '@chakra-ui/react';
+import ApiService from '../../services/ApiService';
 
 const schema = yup
   .object({
     tipoAcesso: yup.string().required('Campo obrigatório!'),
-    email: yup.string().email('Insira um e-mail válido.').required('Campo obrigatório!'),
+    email: yup
+      .string()
+      .email('Insira um e-mail válido.')
+      .required('Campo obrigatório!'),
     senha: yup.string().required('Campo obrigatório!'),
   })
   .required();
@@ -37,10 +41,19 @@ const Login = () => {
     resolver: yupResolver(schema),
   });
 
-  const onSubmit = values => {
-    console.log(values);
-    if (values.tipoAcesso === "1")
-      navigate('/painel-analista');
+  const onSubmit = async values => {
+    try {
+      var resultado = await ApiService.login(
+        values.tipoAcesso,
+        values.email,
+        values.senha
+      );
+      if (resultado != null && values.tipoAcesso === '1') {
+        navigate('/painel-analista');
+      }
+    } catch (error) {
+      alert('usuário ou senha inválidos');
+    }
   };
 
   return (

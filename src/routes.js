@@ -6,10 +6,11 @@ import {
   Outlet,
   Navigate,
 } from 'react-router-dom';
-
+import CadastroCliente from './pages/CadastroCliente';
 import Login from './pages/Login';
 import PainelAnalista from './pages/Painel/Analista';
 import ConvidarCliente from './pages/Painel/Analista/ConvidarCliente';
+import PainelCliente from './pages/Painel/Cliente';
 
 const MainRoutes = () => {
   return (
@@ -19,6 +20,8 @@ const MainRoutes = () => {
         <Route path="/" element={<Login />} />
         <Route path="painel-analista" element={<PainelAnalista />} />
         <Route path="convidar-cliente" element={<ConvidarCliente />} />
+        <Route path="painel-cliente" element={<PainelCliente />} />
+        <Route path="cadastro-cliente" element={<CadastroCliente />} />
       </Routes>
     </BrowserRouter>
   );

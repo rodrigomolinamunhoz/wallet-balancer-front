@@ -16,6 +16,7 @@ import {
   Select,
   Image,
   FormErrorMessage,
+  useToast,
 } from '@chakra-ui/react';
 import ApiService from '../../services/ApiService';
 
@@ -52,9 +53,19 @@ const Login = () => {
         navigate('/painel-analista');
       }
     } catch (error) {
-      alert('usuário ou senha inválidos');
+      //alert('usuário ou senha inválidos');
+      toast({
+        title: 'Falha ao realizar o login!',
+        description: "Usuário ou senha inválidos.",
+        status: 'error',
+        duration: 5000,
+        position: 'top',
+        isClosable: true,
+      });
     }
   };
+
+  const toast = useToast();
 
   return (
     <Flex

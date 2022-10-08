@@ -15,6 +15,7 @@ import {
   Heading,
   useColorModeValue,
   FormErrorMessage,
+  useToast,
   Select,
   Image,
 } from '@chakra-ui/react';
@@ -34,9 +35,18 @@ const ConvidarCliente = () => {
     resolver: yupResolver(schema),
   });
 
-  const onSubmit = values => {
+  const onSubmit = values => {  
+    toast({
+        title: 'E-mail enviado com sucesso!',
+        status: 'success',
+        duration: 4000,
+        position: 'top',
+        isClosable: true,
+      });
     console.log(values);
   };
+
+  const toast = useToast();
 
   return (<>
     <Navbar />
@@ -44,11 +54,10 @@ const ConvidarCliente = () => {
       minH={'60vh'}
       align={'center'}
       justify={'center'}
-      bg={useColorModeValue('gray.50', 'gray.800')}
     >
       <Stack spacing={8} mx={'auto'} maxW={'lg'} py={12} px={6}>
         <Stack align={'center'}>
-          <Heading fontSize={'4xl'}>Convidar Cliente</Heading>
+          <Heading fontSize={'2xl'}>Convidar Cliente</Heading>
         </Stack>
         <Box
           rounded={'lg'}

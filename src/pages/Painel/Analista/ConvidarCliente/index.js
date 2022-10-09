@@ -38,6 +38,7 @@ const ConvidarCliente = () => {
   const {
     handleSubmit,
     register,
+    reset,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
@@ -54,6 +55,7 @@ const ConvidarCliente = () => {
         toast,
         'E-mail enviado com sucesso!'
       );
+      reset({ emailConvite: '' });
     } catch (error) {
       NotificationService.showApiResponseErrorAlert(toast, error.response);
     } finally {

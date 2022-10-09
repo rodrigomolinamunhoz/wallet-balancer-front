@@ -22,19 +22,19 @@ const responseSuccessHandler = response => {
   return response;
 };
 
-const responseErrorHandler = error => {
-  // if (error.response.status === 401) {
-  //   CacheService.removeAll();
-  //   window.location = '/';
-  // }
-  // return Promise.reject(error);
-};
+//const responseErrorHandler = error => {
+// if (error.response.status === 401) {
+//   CacheService.removeAll();
+//   window.location = '/';
+// }
+// return Promise.reject(error);
+//};
 
 WebApiTotem.interceptors.request.use(requestHandler);
 
 WebApiTotem.interceptors.response.use(
-  response => responseSuccessHandler(response),
-  error => responseErrorHandler(error)
+  response => responseSuccessHandler(response)
+  //error => responseErrorHandler(error)
 );
 
 export default WebApiTotem;

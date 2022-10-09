@@ -1,6 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
 import {
   Box,
   Flex,
@@ -8,23 +7,30 @@ import {
   Button,
   Stack,
   Image,
-  Link,
   useColorModeValue,
   useBreakpointValue,
-  useToast,
 } from '@chakra-ui/react';
+import { CacheService } from '../../services/CacheService';
+import { StorageKeys } from '../../constants/StorageKeys';
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const [usuarioLogado, setUsuarioLogado] = useState('');
+
+  useEffect(() => {
+    setUsuarioLogado(CacheService.get(StorageKeys.LoggedUser));
+  }, []);
+
   const inicio = () => {
     navigate('/painel-analista');
-  }
+  };
   const convidarCliente = () => {
     navigate('/convidar-cliente');
-  }
+  };
   const sair = () => {
+    CacheService.removeAll();
     navigate('/');
-  }
+  };
   return (
     <Box>
       <Flex
@@ -49,7 +55,7 @@ const Navbar = () => {
               fontWeight={400}
               fontFamily={'heading'}
               variant={'link'}
-            //color={linkColor}
+              //color={linkColor}
             >
               Início
             </Button>
@@ -61,7 +67,7 @@ const Navbar = () => {
               fontWeight={400}
               fontFamily={'heading'}
               variant={'link'}
-            //color={linkColor}
+              //color={linkColor}
             >
               Convidar Cliente
             </Button>
@@ -79,7 +85,7 @@ const Navbar = () => {
             fontFamily={'heading'}
             color={useColorModeValue('gray.800', 'white')}
           >
-            Rodrigo
+            {usuarioLogado}
           </Text>
           <Button
             //onClick={() => logout()}

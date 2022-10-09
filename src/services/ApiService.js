@@ -9,4 +9,12 @@ export default class ApiService {
     });
     return response.data;
   }
+
+  static async convidar(idAnalista, email) {
+    const response = await WebApi.post('/convidar-cliente', {
+      idAnalista: idAnalista,
+      email: email,
+    });
+    return response.data;
+  }
 }

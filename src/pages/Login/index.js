@@ -19,6 +19,10 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import ApiService from '../../services/ApiService';
+import { CacheService } from '../../services/CacheService';
+import { StorageKeys } from '../../constants/StorageKeys';
+import { useLoader } from '../../context/loaderProvider';
+import NotificationService from '../../services/NotificationService';
 
 const schema = yup
   .object({
@@ -33,39 +37,42 @@ const schema = yup
 
 const Login = () => {
   const navigate = useNavigate();
+  const loader = useLoader();
+  const toast = useToast();
 
   const {
     handleSubmit,
     register,
     formState: { errors },
   } = useForm({
+    defaultValues: {
+      email: 'analista@gmail.com',
+      senha: '123',
+      tipoAcesso: '1',
+    },
     resolver: yupResolver(schema),
   });
 
   const onSubmit = async values => {
     try {
+      loader.setLoader(true);
       var resultado = await ApiService.login(
         values.tipoAcesso,
         values.email,
         values.senha
       );
       if (resultado != null && values.tipoAcesso === '1') {
+        CacheService.save(StorageKeys.AuthToken, resultado.token.token);
+        CacheService.save(StorageKeys.LoggedUser, resultado.user.nome);
+        CacheService.save(StorageKeys.IdAnalista, resultado.user.id);
         navigate('/painel-analista');
       }
     } catch (error) {
-      //alert('usuário ou senha inválidos');
-      toast({
-        title: 'Falha ao realizar o login!',
-        description: "Usuário ou senha inválidos.",
-        status: 'error',
-        duration: 5000,
-        position: 'top',
-        isClosable: true,
-      });
+      NotificationService.showApiResponseErrorAlert(toast, error.response);
+    } finally {
+      loader.setLoader(false);
     }
   };
-
-  const toast = useToast();
 
   return (
     <Flex

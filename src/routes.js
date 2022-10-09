@@ -34,7 +34,7 @@ const MainRoutes = () => {
           <Route path="convidar-cliente" element={<ConvidarCliente />} />
           <Route path="painel-cliente" element={<PainelCliente />} />
         </Route>
-        <Route path="cadastro-cliente" element={<CadastroCliente />} />
+        <Route path="cadastro-cliente/:codigo" element={<CadastroCliente />} />
       </Routes>
     </BrowserRouter>
   );

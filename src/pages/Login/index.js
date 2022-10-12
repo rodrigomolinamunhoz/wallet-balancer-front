@@ -45,11 +45,11 @@ const Login = () => {
     register,
     formState: { errors },
   } = useForm({
-    defaultValues: {
-      email: 'analista@gmail.com',
-      senha: '123',
-      tipoAcesso: '1',
-    },
+    // defaultValues: {
+    //   email: 'analista@gmail.com',
+    //   senha: '123',
+    //   tipoAcesso: '1',
+    // },
     resolver: yupResolver(schema),
   });
 

@@ -67,10 +67,11 @@ const ConvidarCliente = () => {
     <>
       <Navbar />
       <Flex
-        minH={'89vh'}
+        minH={'90vh'}
         align={'center'}
         justify={'center'}
         bg={useColorModeValue('gray.50', 'gray.800')}
+        paddingBottom={300}
       >
         <Stack spacing={8} mx={'auto'} maxW={'lg'} py={12} px={6}>
           <Stack align={'center'}>

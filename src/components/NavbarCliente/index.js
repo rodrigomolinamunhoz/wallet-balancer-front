@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import {
@@ -13,14 +13,31 @@ import {
     useBreakpointValue,
     useToast,
 } from '@chakra-ui/react';
+import { CacheService } from '../../services/CacheService';
+import { StorageKeys } from '../../constants/StorageKeys';
 
 const NavbarCliente = () => {
     const navigate = useNavigate();
+    const [usuarioLogado, setUsuarioLogado] = useState('');
+
+    useEffect(() => {
+        setUsuarioLogado(CacheService.get(StorageKeys.LoggedUser));
+      }, []);
+
     const inicio = () => {
         navigate('/painel-cliente');
     }
 
+    const gerenciarCarteiras = () => {
+        navigate('/gerenciar-carteiras');
+    }
+
+    const gerenciarAtivos = () => {
+        navigate('/gerenciar-ativos');
+    }
+
     const sair = () => {
+        CacheService.removeAll();
         navigate('/');
     }
 
@@ -48,15 +65,37 @@ const NavbarCliente = () => {
                             fontWeight={400}
                             fontFamily={'heading'}
                             variant={'link'}
-                        //color={linkColor}
+                            paddingLeft={6}
                         >
                             Início
+                        </Button>
+                        <Button
+                            onClick={() => gerenciarCarteiras()}
+                            p={2}
+                            as={'a'}
+                            fontSize={'sm'}
+                            fontWeight={400}
+                            fontFamily={'heading'}
+                            variant={'link'}
+                        >
+                            Gerenciar Carteiras
+                        </Button>
+                        <Button
+                            onClick={() => gerenciarAtivos()}
+                            p={2}
+                            as={'a'}
+                            fontSize={'sm'}
+                            fontWeight={400}
+                            fontFamily={'heading'}
+                            variant={'link'}
+                        >
+                            Gerenciar Ativos
                         </Button>
                     </Stack>
                 </Flex>
 
                 <Stack
-                    flex={{ base: 1, md: 0 }}
+                    flex={{ base: 1, md: 1 }}
                     justify={'flex-end'}
                     direction={'row'}
                     spacing={6}
@@ -66,7 +105,7 @@ const NavbarCliente = () => {
                         fontFamily={'heading'}
                         color={useColorModeValue('gray.800', 'white')}
                     >
-                        Dener
+                        {usuarioLogado}
                     </Text>
                     <Button
                         //onClick={() => logout()}

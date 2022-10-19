@@ -67,6 +67,12 @@ const Login = () => {
         CacheService.save(StorageKeys.IdAnalista, resultado.user.id);
         navigate('/painel-analista');
       }
+      else if(resultado != null && values.tipoAcesso === '2') {
+        CacheService.save(StorageKeys.AuthToken, resultado.token.token);
+        CacheService.save(StorageKeys.LoggedUser, resultado.user.nome);
+        CacheService.save(StorageKeys.IdCliente, resultado.user.id);
+        navigate('/painel-cliente');
+      }
     } catch (error) {
       NotificationService.showApiResponseErrorAlert(toast, error.response);
     } finally {

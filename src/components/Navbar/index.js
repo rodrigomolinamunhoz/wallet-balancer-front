@@ -55,6 +55,7 @@ const Navbar = () => {
               fontWeight={400}
               fontFamily={'heading'}
               variant={'link'}
+              paddingLeft={6}
               //color={linkColor}
             >
               Início
@@ -75,7 +76,7 @@ const Navbar = () => {
         </Flex>
 
         <Stack
-          flex={{ base: 1, md: 0 }}
+          flex={{ base: 1, md: 1 }}
           justify={'flex-end'}
           direction={'row'}
           spacing={6}

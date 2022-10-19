@@ -34,5 +34,6 @@ export class CacheService {
     localStorage.removeItem(StorageKeys.AuthToken);
     localStorage.removeItem(StorageKeys.LoggedUser);
     localStorage.removeItem(StorageKeys.IdAnalista);
+    localStorage.removeItem(StorageKeys.IdCliente);
   }
 }

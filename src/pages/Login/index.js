@@ -29,7 +29,7 @@ const schema = yup
     tipoAcesso: yup.string().required('Campo obrigatório!'),
     email: yup
       .string()
-      .email('Insira um e-mail válido..')
+      .email('Insira um e-mail válido.')
       .required('Campo obrigatório!'),
     senha: yup.string().required('Campo obrigatório!'),
   })
@@ -66,8 +66,7 @@ const Login = () => {
         CacheService.save(StorageKeys.LoggedUser, resultado.user.nome);
         CacheService.save(StorageKeys.IdAnalista, resultado.user.id);
         navigate('/painel-analista');
-      }
-      else if(resultado != null && values.tipoAcesso === '2') {
+      } else if (resultado != null && values.tipoAcesso === '2') {
         CacheService.save(StorageKeys.AuthToken, resultado.token.token);
         CacheService.save(StorageKeys.LoggedUser, resultado.user.nome);
         CacheService.save(StorageKeys.IdCliente, resultado.user.id);

@@ -15,7 +15,11 @@ import {
   useColorModeValue,
   Image,
   FormErrorMessage,
+  useToast,
 } from '@chakra-ui/react';
+import ApiService from '../../services/ApiService';
+import { useLoader } from '../../context/loaderProvider';
+import NotificationService from '../../services/NotificationService';
 
 const schema = yup
   .object({
@@ -26,7 +30,7 @@ const schema = yup
       .min(6, 'Insira um código válido')
       .max(6, 'Insira um código válido'),
     nome: yup.string().required('Campo obrigatório!'),
-    email: yup
+    emailPrimario: yup
       .string()
       .email('Insira um e-mail válido.')
       .required('Campo obrigatório!'),
@@ -40,6 +44,8 @@ const schema = yup
 
 const CadastroCliente = () => {
   const navigate = useNavigate();
+  const loader = useLoader();
+  const toast = useToast();
   let { codigo } = useParams();
 
   const {
@@ -53,8 +59,27 @@ const CadastroCliente = () => {
     },
   });
 
-  const onSubmit = () => {
-    navigate('/painel-cliente');
+  const onSubmit = async values => {
+    try {
+      loader.setLoader(true);
+      await ApiService.cadastrarCliente(
+        values.codigo,
+        values.nome,
+        values.emailPrimario,
+        values.emailSecundario,
+        values.senha
+      );
+
+      NotificationService.showSuccessAlert(
+        toast,
+        'Cliente cadastrado com sucesso!'
+      );
+      navigate('/');
+    } catch (error) {
+      NotificationService.showApiResponseErrorAlert(toast, error.response);
+    } finally {
+      loader.setLoader(false);
+    }
   };
 
   return (
@@ -94,17 +119,17 @@ const CadastroCliente = () => {
                 </FormErrorMessage>
               </FormControl>
               <FormControl id="nome" isInvalid={errors.nome}>
-                <FormLabel>Primeiro Nome</FormLabel>
+                <FormLabel>Nome</FormLabel>
                 <Input id="nome" {...register('nome')} />
                 <FormErrorMessage>
                   {errors.nome && errors.nome.message}
                 </FormErrorMessage>
               </FormControl>
-              <FormControl id="email" isInvalid={errors.email}>
+              <FormControl id="emailPrimario" isInvalid={errors.emailPrimario}>
                 <FormLabel>E-mail Principal</FormLabel>
-                <Input id="email" {...register('email')} />
+                <Input id="emailPrimario" {...register('emailPrimario')} />
                 <FormErrorMessage>
-                  {errors.email && errors.email.message}
+                  {errors.emailPrimario && errors.emailPrimario.message}
                 </FormErrorMessage>
               </FormControl>
               <FormControl

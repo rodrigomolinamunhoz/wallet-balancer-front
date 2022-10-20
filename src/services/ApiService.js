@@ -17,4 +17,20 @@ export default class ApiService {
     });
     return response.data;
   }
+
+  static async cadastrarCliente(
+    codigo,
+    nome,
+    emailPrimario,
+    emailSecundario,
+    senha
+  ) {
+    await WebApi.post('/cliente', {
+      codigo,
+      nome,
+      emailPrimario,
+      emailSecundario,
+      senha,
+    });
+  }
 }

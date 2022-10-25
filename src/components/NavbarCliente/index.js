@@ -52,7 +52,7 @@ const NavbarCliente = () => {
         borderColor={useColorModeValue('gray.200', 'gray.900')}
         align={'center'}
       >
-        <Image htmlHeight={50} htmlWidth={50} src="./LogoWB.png" alt="Logo" />
+        <Image htmlHeight={50} htmlWidth={50} src="../LogoWB.png" alt="Logo" />
         <Flex flex={{ base: 1 }} justify={{ md: 'start' }}>
           <Stack direction={'row'} spacing={4}>
             <Button

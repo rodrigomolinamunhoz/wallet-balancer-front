@@ -20,13 +20,9 @@ const ListarCarteiras = () => {
 
     const navigate = useNavigate();
 
-    const carteirasTeste = [
-        {
-            "nome": "Carteira 01",
-            "nome": "Carteira 02",
-            "nome": "Carteira 03"
-        }
-    ]
+    const excluir = () => {
+        navigate('/gerenciar-carteiras/excluir');
+    };
 
     const adicionarCarteira = () => {
         navigate('/gerenciar-carteiras/adicionar');
@@ -61,8 +57,8 @@ const ListarCarteiras = () => {
                                 </Thead>
                                 <Tbody>
                                     <Tr>
-                                        <Td>Carteira 01</Td>
-                                        <Td textAlign={'center'}><Button colorScheme='red' size='xs'>Excluir</Button></Td>
+                                        <Td>Carteira01</Td>
+                                        <Td textAlign={'center'}><Button onClick={() => excluir()} colorScheme='red' size='sm'>Excluir</Button></Td>
                                     </Tr >
                                 </Tbody>
                             </Table>

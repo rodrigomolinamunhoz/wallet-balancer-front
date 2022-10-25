@@ -1,6 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import NavbarCliente from '../../../../../components/NavbarCliente';
+import * as yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { useForm } from 'react-hook-form';
 import {
     Flex,
     Box,
@@ -10,11 +13,29 @@ import {
     Stack,
     Button,
     useColorModeValue,
+    FormErrorMessage,
 } from '@chakra-ui/react';
 
-const AdicionarCarteira = () => {
+const schema = yup
+    .object({
+        nomeCarteira: yup.string().required('Campo obrigatório!').min(4, 'O nome deve conter no mínimo quatro caracteres!').matches(/^[a-z0-9]+$/i, 'Digite um nome válido!'),
+    })
+    .required()
 
+const AdicionarCarteira = () => {
     const navigate = useNavigate();
+
+    const {
+        handleSubmit,
+        register,
+        formState: { errors },
+    } = useForm({
+        resolver: yupResolver(schema),
+    });
+
+    const onSubmit = values => {
+        alert('Falta integrar com API!');
+    };
 
     const voltar = () => {
         navigate('/gerenciar-carteiras');
@@ -40,39 +61,32 @@ const AdicionarCarteira = () => {
                         width={800}
                     >
                         <Stack spacing={4}>
-                            <form>
-                                <FormControl id="nomeCarteira">
+                            <form onSubmit={handleSubmit(onSubmit)}>
+                                <FormControl id="nomeCarteira" isInvalid={errors.nomeCarteira}>
                                     <FormLabel textAlign={'center'} marginBottom={'20px'}>Informe o nome da sua nova carteira</FormLabel>
-                                    <Input id="nomeCarteira" />
+                                    <Input id="nomeCarteira" {...register('nomeCarteira')} />
+                                    <FormErrorMessage>
+                                        {errors.nomeCarteira && errors.nomeCarteira.message}
+                                    </FormErrorMessage>
                                 </FormControl>
-
                                 <Stack direction={{ base: 'column', sm: 'row' }} justify={'center'} marginTop={'20px'}>
-
                                     <Button
-                                        bg={'blue.400'}
-                                        color={'white'}
-                                        _hover={{
-                                            bg: 'blue.500',
-                                        }}
                                         type="submit"
+                                        colorScheme='blue'
+                                        size='sm'
                                     >
                                         Adicionar
                                     </Button>
                                     <Button
                                         onClick={() => voltar()}
-                                        bg={'blue.400'}
-                                        color={'white'}
-                                        _hover={{
-                                            bg: 'blue.500',
-                                        }}
-                                        type="submit"
+                                        colorScheme='blue'
+                                        size='sm'
                                     >
                                         Voltar
                                     </Button>
                                 </Stack>
                             </form>
                         </Stack>
-
                     </Box>
                 </Stack>
             </Flex>

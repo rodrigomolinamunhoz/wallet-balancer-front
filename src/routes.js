@@ -16,6 +16,7 @@ import PainelCliente from './pages/Painel/Cliente';
 import PaginaNaoEncontrada from './pages/PaginaNaoEncontrada';
 import GerenciarAtivos from './pages/Painel/Cliente/GerenciarAtivos';
 import GerenciarCarteiras from './pages/Painel/Cliente/GerenciarCarteiras';
+import AdicionarCarteira from './pages/Painel/Cliente/GerenciarCarteiras/AdicionarCarteira';
 
 const ProtectedRoute = ({ redirectPath = '/' }) => {
   const token = CacheService.get(StorageKeys.AuthToken);
@@ -60,6 +61,7 @@ const MainRoutes = () => {
             <Route path="painel-cliente" element={<PainelCliente />} />
             <Route path="gerenciar-carteiras" element={<GerenciarCarteiras />} />
             <Route path="gerenciar-ativos" element={<GerenciarAtivos />} />
+            <Route path="gerenciar-carteiras/adicionar" element={<AdicionarCarteira />} />
           </Route>
         </Route>
       </Routes>

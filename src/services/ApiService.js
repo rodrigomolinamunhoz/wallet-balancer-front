@@ -33,4 +33,22 @@ export default class ApiService {
       senha,
     });
   }
+
+  static async listarCarteira(idCliente) {
+    const response = await WebApi.get(`/carteiras/${idCliente}`);
+    return response.data;
+  }
+
+  static async deletarCarteira(idCarteira) {
+    const response = await WebApi.delete(`/carteira/${idCarteira}`);
+    return response.data;
+  }
+
+  static async adicionarCarteira(carteira) {
+    const response = await WebApi.post('/carteira', {
+      nome: carteira.nome,
+      id_cliente: carteira.id_cliente,
+    });
+    return response.data;
+  }
 }

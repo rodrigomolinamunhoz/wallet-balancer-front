@@ -17,7 +17,6 @@ import PaginaNaoEncontrada from './pages/PaginaNaoEncontrada';
 import GerenciarAtivos from './pages/Painel/Cliente/GerenciarAtivos';
 import GerenciarCarteiras from './pages/Painel/Cliente/GerenciarCarteiras';
 import AdicionarCarteira from './pages/Painel/Cliente/GerenciarCarteiras/AdicionarCarteira';
-import ExcluirCarteira from './pages/Painel/Cliente/GerenciarCarteiras/ExcluirCarteira';
 
 const ProtectedRoute = ({ redirectPath = '/' }) => {
   const token = CacheService.get(StorageKeys.AuthToken);
@@ -52,7 +51,7 @@ const MainRoutes = () => {
         <Route path="*" element={<PaginaNaoEncontrada />} />
         <Route path="/" element={<Login />} />
         <Route path="cadastro-cliente/:codigo" element={<CadastroCliente />} />
-        
+
         <Route element={<ProtectedRoute />}>
           <Route element={<PRAnalista />}>
             <Route path="painel-analista" element={<PainelAnalista />} />
@@ -60,10 +59,15 @@ const MainRoutes = () => {
           </Route>
           <Route element={<PRCliente />}>
             <Route path="painel-cliente" element={<PainelCliente />} />
-            <Route path="gerenciar-carteiras" element={<GerenciarCarteiras />} />
+            <Route
+              path="gerenciar-carteiras"
+              element={<GerenciarCarteiras />}
+            />
             <Route path="gerenciar-ativos" element={<GerenciarAtivos />} />
-            <Route path="gerenciar-carteiras/adicionar" element={<AdicionarCarteira />} />
-            <Route path="gerenciar-carteiras/excluir" element={<ExcluirCarteira/>} />
+            <Route
+              path="gerenciar-carteiras/adicionar"
+              element={<AdicionarCarteira />}
+            />
           </Route>
         </Route>
       </Routes>

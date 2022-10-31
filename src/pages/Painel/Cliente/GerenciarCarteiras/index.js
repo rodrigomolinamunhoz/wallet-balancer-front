@@ -88,13 +88,12 @@ const GerenciarCarteiras = () => {
         bg={useColorModeValue('gray.50', 'gray.800')}
         paddingBottom={300}
       >
-        <Stack spacing={8} mx={'auto'} py={3} px={6}>
+        <Stack spacing={8} mx={'auto'} py={3} px={6} w={"lg"}>
           <Box
             rounded={'lg'}
             bg={useColorModeValue('white', 'gray.700')}
             boxShadow={'lg'}
             p={8}
-            maxW="lg"
           >
             <Button
               onClick={() => adicionarCarteira()}

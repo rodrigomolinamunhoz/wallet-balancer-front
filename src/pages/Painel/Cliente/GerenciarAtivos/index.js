@@ -22,12 +22,14 @@ import {
   Td,
   TableContainer,
   FormErrorMessage,
+  NumberInput,
+  NumberInputField,
 } from '@chakra-ui/react'
 
 const schema = yup
   .object({
     cadastroAtivo: yup.string().required('Campo obrigatório!'),
-    cotacaoAtual: yup.string().required('Campo obrigatório!').matches(/^[1-9]\d{0,2}(\.\d{3})*,\d{2}$/, 'Digite um valor monetário'),
+    cotacaoAtual: yup.string().required('Campo obrigatório!'),
     objetivo: yup.string().required('Campo obrigatório!').matches(/^[1-9][0-9]?$|^100$/, 'Digite um número entre 1 e 100'),
   })
   .required()
@@ -51,6 +53,20 @@ const GerenciarAtivos = () => {
     reset({ cadastroAtivo: '', cotacaoAtual: '', objetivo: '' });
   };
 
+  const desabilitarBotoes = () => {
+    const bt01 = document.querySelector('#btAdicionar')
+    const bt02 = document.querySelector('#btLimpar')
+    const validacao = document.querySelector('#selecionarCarteira').value
+
+    if (validacao.toString() != '') {
+      bt01.disabled = false
+      bt02.disabled = false
+    } else {
+      bt01.disabled = true
+      bt02.disabled = true
+    }
+  };
+
   return <>
     <NavbarCliente />
 
@@ -63,8 +79,9 @@ const GerenciarAtivos = () => {
     >
       <Stack spacing={3} mx={'auto'} py={3} px={6}>
         <Stack>
-          <Select placeholder='Selecione uma carteira' size='sm' width={'250px'} bg={useColorModeValue('white', 'gray.700')} rounded={'lg'}>
+          <Select id="selecionarCarteira" placeholder='Selecione uma carteira' size='sm' width={'250px'} bg={useColorModeValue('white', 'gray.700')} rounded={'lg'} onChange={() => desabilitarBotoes()}>
             <option value='option1'>Carteira 01</option>
+            <option value='option1'>Carteira 02</option>
           </Select>
         </Stack>
         <Box
@@ -72,7 +89,6 @@ const GerenciarAtivos = () => {
           bg={useColorModeValue('white', 'gray.700')}
           boxShadow={'md'}
           p={5}
-          width={800}
         >
           <Stack>
             <form onSubmit={handleSubmit(onSubmit)}>
@@ -91,7 +107,7 @@ const GerenciarAtivos = () => {
                 <Box>
                   <FormControl id="cotacaoAtual" isInvalid={errors.cotacaoAtual}>
                     <FormLabel>COTAÇÃO ATUAL</FormLabel>
-                    <Input id="cotacaoAtual" {...register('cotacaoAtual')} />
+                    <NumberInput min={1} precision={2} id="cotacaoAtual" {...register('cotacaoAtual')}><NumberInputField /></NumberInput>
                     <FormErrorMessage>
                       {errors.cotacaoAtual && errors.cotacaoAtual.message}
                     </FormErrorMessage>
@@ -100,7 +116,7 @@ const GerenciarAtivos = () => {
                 <Box>
                   <FormControl id="objetivo" isInvalid={errors.objetivo}>
                     <FormLabel>OBJETIVO</FormLabel>
-                    <Input id="objetivo" {...register('objetivo')} type='number' />
+                    <Input id="objetivo" {...register('objetivo')} />
                     <FormErrorMessage>
                       {errors.objetivo && errors.objetivo.message}
                     </FormErrorMessage>
@@ -108,8 +124,8 @@ const GerenciarAtivos = () => {
                 </Box>
               </HStack>
               <HStack marginTop={'10px'} justify={'flex-end'} direction={'row'}>
-                <Button onClick={() => limparForm()} colorScheme='blue' size='sm'>Limpar</Button>
-                <Button colorScheme='blue' size='sm' type="submit">Adicionar</Button>
+                <Button id="btLimpar" onClick={() => limparForm()} colorScheme='blue' size='sm' disabled={true}>Limpar</Button>
+                <Button id="btAdicionar" colorScheme='blue' size='sm' type="submit" disabled={true}>Adicionar</Button>
               </HStack>
             </form>
           </Stack>
@@ -119,7 +135,6 @@ const GerenciarAtivos = () => {
           bg={useColorModeValue('white', 'gray.700')}
           boxShadow={'lg'}
           p={5}
-          width={800}
         >
           <Stack>
             <TableContainer>

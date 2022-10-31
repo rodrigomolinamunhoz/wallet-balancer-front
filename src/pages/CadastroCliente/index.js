@@ -29,16 +29,18 @@ const schema = yup
       .matches(/^[0-9]+$/, 'Digite somente números')
       .min(6, 'Insira um código válido')
       .max(6, 'Insira um código válido'),
-    nome: yup.string().required('Campo obrigatório!'),
+    nome: yup.string().required('Campo obrigatório!').max(253, 'O nome pode ter no máximo 253 caracteres'),
     emailPrimario: yup
       .string()
       .email('Insira um e-mail válido.')
-      .required('Campo obrigatório!'),
+      .required('Campo obrigatório!')
+      .max(253, 'O e-mail pode ter no máximo 253 caracteres'),
     emailSecundario: yup
       .string()
       .email('Insira um e-mail válido.')
-      .required('Campo obrigatório!'),
-    senha: yup.string().required('Campo obrigatório!'),
+      .required('Campo obrigatório!')
+      .max(253, 'O e-mail pode ter no máximo 253 caracteres'),
+    senha: yup.string().required('Campo obrigatório!').max(59, 'A senha pode ter no máximo 59 caracteres'),
   })
   .required();
 

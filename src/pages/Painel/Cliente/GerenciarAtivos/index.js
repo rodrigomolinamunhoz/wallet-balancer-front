@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import NavbarCliente from '../../../../components/NavbarCliente';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -24,7 +24,12 @@ import {
   FormErrorMessage,
   NumberInput,
   NumberInputField,
+  useToast,
 } from '@chakra-ui/react'
+import ApiService from '../../../../services/ApiService';
+import { CacheService } from '../../../../services/CacheService';
+import { StorageKeys } from '../../../../constants/StorageKeys';
+import NotificationService from '../../../../services/NotificationService';
 
 const schema = yup
   .object({
@@ -35,6 +40,23 @@ const schema = yup
   .required()
 
 const GerenciarAtivos = () => {
+  const toast = useToast();
+  const [carteiras, setCarteiras] = useState([]);
+
+  const listarCarteira = async () => {
+    try {
+      const carteiras = await ApiService.listarCarteira(
+        CacheService.get(StorageKeys.IdCliente)
+      );
+      setCarteiras(carteiras.data);
+    } catch (error) {
+      NotificationService.showApiResponseErrorAlert(toast, error.response);
+    }
+  };
+
+  useEffect(() => {
+    listarCarteira();
+  }, []);
 
   const {
     handleSubmit,
@@ -55,15 +77,12 @@ const GerenciarAtivos = () => {
 
   const desabilitarBotoes = () => {
     const bt01 = document.querySelector('#btAdicionar')
-    const bt02 = document.querySelector('#btLimpar')
     const validacao = document.querySelector('#selecionarCarteira').value
 
     if (validacao.toString() != '') {
       bt01.disabled = false
-      bt02.disabled = false
     } else {
       bt01.disabled = true
-      bt02.disabled = true
     }
   };
 
@@ -80,8 +99,9 @@ const GerenciarAtivos = () => {
       <Stack spacing={3} mx={'auto'} py={3} px={6}>
         <Stack>
           <Select id="selecionarCarteira" placeholder='Selecione uma carteira' size='sm' width={'250px'} bg={useColorModeValue('white', 'gray.700')} rounded={'lg'} onChange={() => desabilitarBotoes()}>
-            <option value='option1'>Carteira 01</option>
-            <option value='option1'>Carteira 02</option>
+            {carteiras.map(c => {
+              return (<option key={c.id}> {c.nome} </option>);
+            })}
           </Select>
         </Stack>
         <Box
@@ -124,7 +144,7 @@ const GerenciarAtivos = () => {
                 </Box>
               </HStack>
               <HStack marginTop={'10px'} justify={'flex-end'} direction={'row'}>
-                <Button id="btLimpar" onClick={() => limparForm()} colorScheme='blue' size='sm' disabled={true}>Limpar</Button>
+                <Button id="btLimpar" onClick={() => limparForm()} colorScheme='blue' size='sm'>Limpar</Button>
                 <Button id="btAdicionar" colorScheme='blue' size='sm' type="submit" disabled={true}>Adicionar</Button>
               </HStack>
             </form>

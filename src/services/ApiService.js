@@ -51,4 +51,16 @@ export default class ApiService {
     });
     return response.data;
   }
+
+  static async listarAcao() {
+    const response = await WebApi.get(`/acoes`);
+    return response.data;
+  }
+
+  static async listarAtivos(idCliente, idCarteira) {
+    const response = await WebApi.get(
+      `/cliente/${idCliente}/carteira/${idCarteira}/ativos`
+    );
+    return response.data;
+  }
 }

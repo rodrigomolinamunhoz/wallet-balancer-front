@@ -57,6 +57,7 @@ const GerenciarAtivos = () => {
   const [ativos, setAtivos] = useState([]);
   const [habilitaDesabilitaFormulario, setHabilitaDesabilitaFormulario] =
     useState(true);
+  const [habilitaCampoAcao, setHabilitaCampoAcao] = useState(true);
   const [tituloBotaoEditar, setTituloBotaoEditar] = useState(false);
   const loader = useLoader();
 
@@ -101,10 +102,14 @@ const GerenciarAtivos = () => {
     }
   };
 
-  const adicionarEditarAtivo = async ativos => {
+  const adicionarEditarAtivo = async () => {
     try {
       loader.setLoader(true);
       await ApiService.adicionarEditarAtivo(idCarteira, ativos);
+      NotificationService.showSuccessAlert(
+        toast,
+        'Registro atualizado com sucesso!'
+      );
       await listarAtivos(idCarteira);
     } catch (error) {
       NotificationService.showApiResponseErrorAlert(toast, error.response);
@@ -115,6 +120,7 @@ const GerenciarAtivos = () => {
 
   const limparForm = () => {
     setTituloBotaoEditar(false);
+    setHabilitaCampoAcao(false);
     reset({ idAtivo: '', acao: '', cotacaoAtual: 0.0, objetivo: 1 });
   };
 
@@ -122,6 +128,7 @@ const GerenciarAtivos = () => {
     if (idCarteira) {
       setIdCarteira(idCarteira);
       setHabilitaDesabilitaFormulario(false);
+      setHabilitaCampoAcao(false);
       try {
         loader.setLoader(true);
         const resultado = await ApiService.listarAtivos(
@@ -148,26 +155,25 @@ const GerenciarAtivos = () => {
     } else {
       setAtivos([]);
       setHabilitaDesabilitaFormulario(true);
+      setHabilitaCampoAcao(true);
     }
   };
 
   const onSubmit = values => {
-    if (values.idAtivo) {
-      var ativo = ativos.find(a => a.id === values.idAtivo);
-      ativo.acao_id = parseInt(values.acao);
+    if (values.idAtivo >= 0) {
+      var ativo = ativos.find(
+        a => a.id === values.idAtivo && a.acao_id === parseInt(values.acao)
+      );
       ativo.objetivo = values.objetivo;
       ativo.cotacao_atual = values.cotacaoAtual;
-
       var ativosSemOAlterado = ativos.filter(a => a.id !== values.idAtivo);
-
-      console.log(ativo);
-      console.log(ativosSemOAlterado);
-
-      adicionarEditarAtivo([...ativosSemOAlterado, ativo]);
+      setAtivos([...ativosSemOAlterado, ativo]);
     } else {
       const ativo = {
+        id: 0,
         tipo_cadastro: 'N',
         acao_id: parseInt(values.acao),
+        codigo: acoes.find(a => a.idAcao === parseInt(values.acao)).codigoAcao,
         objetivo: values.objetivo,
         cotacao_atual: values.cotacaoAtual,
         quantidade: 0,
@@ -175,12 +181,13 @@ const GerenciarAtivos = () => {
         cliente_id: parseInt(CacheService.get(StorageKeys.IdCliente)),
       };
 
-      adicionarEditarAtivo([...ativos, ativo]);
+      setAtivos([...ativos, ativo]);
     }
   };
 
   const editarAtivo = ativo => {
     setTituloBotaoEditar(true);
+    setHabilitaCampoAcao(true);
     setValue('idAtivo', ativo.id);
     setValue('acao', ativo.acao_id);
     setValue('cotacaoAtual', ativo.cotacao_atual);
@@ -241,7 +248,7 @@ const GerenciarAtivos = () => {
                     <FormControl
                       id="acao"
                       isInvalid={errors.acao}
-                      isDisabled={habilitaDesabilitaFormulario}
+                      isDisabled={habilitaCampoAcao}
                     >
                       <FormLabel>AÇÃO</FormLabel>
                       <Select
@@ -385,6 +392,7 @@ const GerenciarAtivos = () => {
               colorScheme="blue"
               size="sm"
               disabled={habilitaDesabilitaFormulario}
+              onClick={() => adicionarEditarAtivo()}
             >
               Salvar Ativo(s)
             </Button>

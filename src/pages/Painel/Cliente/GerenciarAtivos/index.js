@@ -6,8 +6,8 @@ import { useForm } from 'react-hook-form';
 import {
   FormControl,
   FormLabel,
-  Input,
   Select,
+  Input,
   Stack,
   Box,
   Button,
@@ -30,23 +30,45 @@ import ApiService from '../../../../services/ApiService';
 import { CacheService } from '../../../../services/CacheService';
 import { StorageKeys } from '../../../../constants/StorageKeys';
 import NotificationService from '../../../../services/NotificationService';
+import { useLoader } from '../../../../context/loaderProvider';
 
 const schema = yup
   .object({
-    cadastroAtivo: yup.string().required('Campo obrigatório!'),
-    cotacaoAtual: yup.string().required('Campo obrigatório!'),
+    acao: yup.string().required('Campo obrigatório!'),
+    cotacaoAtual: yup
+      .number()
+      .transform(value => (isNaN(value) ? 0 : value))
+      .min(0.01, 'Valor deve ser maior que 1 centavo!')
+      .required('Campo obrigatório!'),
     objetivo: yup
-      .string()
-      .required('Campo obrigatório!')
-      .matches(/^[1-9][0-9]?$|^100$/, 'Digite um número entre 1 e 100'),
+      .number()
+      .transform(value => (isNaN(value) ? 0 : value))
+      .min(1, 'Digite valor igual ou maior que 1')
+      .max(100, 'Digite valor igual ou menor que 100')
+      .required('Campo obrigatório!'),
   })
   .required();
 
 const GerenciarAtivos = () => {
   const toast = useToast();
   const [carteiras, setCarteiras] = useState([]);
+  const [idCarteira, setIdCarteira] = useState('');
   const [acoes, setAcoes] = useState([]);
   const [ativos, setAtivos] = useState([]);
+  const [habilitaDesabilitaFormulario, setHabilitaDesabilitaFormulario] =
+    useState(true);
+  const [tituloBotaoEditar, setTituloBotaoEditar] = useState(false);
+  const loader = useLoader();
+
+  const {
+    handleSubmit,
+    register,
+    reset,
+    setValue,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schema),
+  });
 
   useEffect(() => {
     listarCarteira();
@@ -55,66 +77,115 @@ const GerenciarAtivos = () => {
 
   const listarCarteira = async () => {
     try {
+      loader.setLoader(true);
       const carteiras = await ApiService.listarCarteira(
         CacheService.get(StorageKeys.IdCliente)
       );
       setCarteiras(carteiras.data);
     } catch (error) {
       NotificationService.showApiResponseErrorAlert(toast, error.response);
+    } finally {
+      loader.setLoader(false);
     }
   };
 
   const listarAcoes = async () => {
     try {
+      loader.setLoader(true);
       const resultado = await ApiService.listarAcao();
-      console.log(resultado);
       setAcoes(resultado);
     } catch (error) {
       NotificationService.showApiResponseErrorAlert(toast, error.response);
+    } finally {
+      loader.setLoader(false);
     }
+  };
+
+  const adicionarEditarAtivo = async ativos => {
+    try {
+      loader.setLoader(true);
+      await ApiService.adicionarEditarAtivo(idCarteira, ativos);
+      await listarAtivos(idCarteira);
+    } catch (error) {
+      NotificationService.showApiResponseErrorAlert(toast, error.response);
+    } finally {
+      loader.setLoader(false);
+    }
+  };
+
+  const limparForm = () => {
+    setTituloBotaoEditar(false);
+    reset({ idAtivo: '', acao: '', cotacaoAtual: 0.0, objetivo: 1 });
   };
 
   const listarAtivos = async idCarteira => {
     if (idCarteira) {
+      setIdCarteira(idCarteira);
+      setHabilitaDesabilitaFormulario(false);
       try {
+        loader.setLoader(true);
         const resultado = await ApiService.listarAtivos(
           CacheService.get(StorageKeys.IdCliente),
           idCarteira
         );
-        console.log(resultado);
-        setAtivos(resultado);
+
+        if (resultado.length > 0) {
+          let novoArray = resultado.map(e => {
+            e.tipo_cadastro = 'E';
+            e.cliente_id = CacheService.get(StorageKeys.IdCliente);
+            e.codigo = e.acao.codigo;
+            return e;
+          });
+          setAtivos(novoArray);
+        } else {
+          setAtivos([]);
+        }
       } catch (error) {
         NotificationService.showApiResponseErrorAlert(toast, error.response);
+      } finally {
+        loader.setLoader(false);
       }
+    } else {
+      setAtivos([]);
+      setHabilitaDesabilitaFormulario(true);
     }
   };
 
-  const {
-    handleSubmit,
-    register,
-    reset,
-    formState: { errors },
-  } = useForm({
-    resolver: yupResolver(schema),
-  });
-
   const onSubmit = values => {
-    alert('Falta integrar com API!');
+    if (values.idAtivo) {
+      var ativo = ativos.find(a => a.id === values.idAtivo);
+      ativo.acao_id = parseInt(values.acao);
+      ativo.objetivo = values.objetivo;
+      ativo.cotacao_atual = values.cotacaoAtual;
+
+      var ativosSemOAlterado = ativos.filter(a => a.id !== values.idAtivo);
+
+      console.log(ativo);
+      console.log(ativosSemOAlterado);
+
+      adicionarEditarAtivo([...ativosSemOAlterado, ativo]);
+    } else {
+      const ativo = {
+        tipo_cadastro: 'N',
+        acao_id: parseInt(values.acao),
+        objetivo: values.objetivo,
+        cotacao_atual: values.cotacaoAtual,
+        quantidade: 0,
+        carteira_id: parseInt(idCarteira),
+        cliente_id: parseInt(CacheService.get(StorageKeys.IdCliente)),
+      };
+
+      adicionarEditarAtivo([...ativos, ativo]);
+    }
   };
 
-  const limparForm = () => {
-    reset({ cadastroAtivo: '', cotacaoAtual: '', objetivo: '' });
+  const editarAtivo = ativo => {
+    setTituloBotaoEditar(true);
+    setValue('idAtivo', ativo.id);
+    setValue('acao', ativo.acao_id);
+    setValue('cotacaoAtual', ativo.cotacao_atual);
+    setValue('objetivo', ativo.objetivo);
   };
-
-  // const desabilitarBotoes = () => {
-  //   const bt01 = document.querySelector('#btAdicionar');
-  //   const validacao = document.querySelector('#selecionarCarteira').value;
-  //   if (validacao.toString() !== '') {
-  //     bt01.disabled = false;
-  //   } else {
-  //     bt01.disabled = true;
-  //   }
-  // };
 
   return (
     <>
@@ -130,12 +201,11 @@ const GerenciarAtivos = () => {
         <Stack spacing={3} mx={'auto'} py={3} px={6}>
           <Stack>
             <Select
-              id="selecionarCarteira"
+              id="carteira"
+              name="carteira"
               placeholder="Selecione uma carteira"
-              size="sm"
               width={'250px'}
               bg={useColorModeValue('white', 'gray.700')}
-              rounded={'lg'}
               onChange={e => listarAtivos(e.target.value)}
             >
               {carteiras.map(c => {
@@ -157,14 +227,26 @@ const GerenciarAtivos = () => {
               <form onSubmit={handleSubmit(onSubmit)}>
                 <HStack spacing={'2'}>
                   <Box>
+                    <FormControl id="idAtivo">
+                      <FormLabel>ID</FormLabel>
+                      <Input
+                        id="idAtivo"
+                        width={'45px'}
+                        disabled={true}
+                        {...register('idAtivo')}
+                      />
+                    </FormControl>
+                  </Box>
+                  <Box>
                     <FormControl
-                      id="cadastroAtivo"
-                      isInvalid={errors.cadastroAtivo}
+                      id="acao"
+                      isInvalid={errors.acao}
+                      isDisabled={habilitaDesabilitaFormulario}
                     >
-                      <FormLabel>ATIVO</FormLabel>
+                      <FormLabel>AÇÃO</FormLabel>
                       <Select
-                        id="cadastroAtivo"
-                        {...register('cadastroAtivo')}
+                        id="acao"
+                        {...register('acao')}
                         placeholder="Selecione"
                         width={'250px'}
                       >
@@ -177,7 +259,7 @@ const GerenciarAtivos = () => {
                         })}
                       </Select>
                       <FormErrorMessage>
-                        {errors.cadastroAtivo && errors.cadastroAtivo.message}
+                        {errors.acao && errors.acao.message}
                       </FormErrorMessage>
                     </FormControl>
                   </Box>
@@ -185,12 +267,14 @@ const GerenciarAtivos = () => {
                     <FormControl
                       id="cotacaoAtual"
                       isInvalid={errors.cotacaoAtual}
+                      isDisabled={habilitaDesabilitaFormulario}
                     >
-                      <FormLabel>COTAÇÃO ATUAL</FormLabel>
+                      <FormLabel>COTAÇÃO ATUAL (R$)</FormLabel>
                       <NumberInput
-                        min={1}
-                        precision={2}
                         id="cotacaoAtual"
+                        name="cotacaoAtual"
+                        precision={2}
+                        defaultValue={0}
                         {...register('cotacaoAtual')}
                       >
                         <NumberInputField />
@@ -201,9 +285,20 @@ const GerenciarAtivos = () => {
                     </FormControl>
                   </Box>
                   <Box>
-                    <FormControl id="objetivo" isInvalid={errors.objetivo}>
-                      <FormLabel>OBJETIVO</FormLabel>
-                      <Input id="objetivo" {...register('objetivo')} />
+                    <FormControl
+                      id="objetivo"
+                      isInvalid={errors.objetivo}
+                      isDisabled={habilitaDesabilitaFormulario}
+                    >
+                      <FormLabel>OBJETIVO (%)</FormLabel>
+                      <NumberInput
+                        id="objetivo"
+                        name="objetivo"
+                        defaultValue={1}
+                        {...register('objetivo')}
+                      >
+                        <NumberInputField />
+                      </NumberInput>
                       <FormErrorMessage>
                         {errors.objetivo && errors.objetivo.message}
                       </FormErrorMessage>
@@ -220,6 +315,7 @@ const GerenciarAtivos = () => {
                     onClick={() => limparForm()}
                     colorScheme="blue"
                     size="sm"
+                    disabled={habilitaDesabilitaFormulario}
                   >
                     Limpar
                   </Button>
@@ -228,9 +324,9 @@ const GerenciarAtivos = () => {
                     colorScheme="blue"
                     size="sm"
                     type="submit"
-                    disabled={true}
+                    disabled={habilitaDesabilitaFormulario}
                   >
-                    Adicionar
+                    {tituloBotaoEditar ? 'Editar' : 'Adicionar'}
                   </Button>
                 </HStack>
               </form>
@@ -247,21 +343,28 @@ const GerenciarAtivos = () => {
                 <Table variant="simple">
                   <Thead>
                     <Tr>
-                      <Th>ATIVO</Th>
-                      <Th>COTAÇÃO ATUAL</Th>
-                      <Th>OBJETIVO %</Th>
+                      <Th textAlign={'center'}>ID</Th>
                       <Th textAlign={'center'}>AÇÃO</Th>
+                      <Th textAlign={'center'}>COTAÇÃO ATUAL (R$)</Th>
+                      <Th textAlign={'center'}>OBJETIVO (%)</Th>
+                      <Th textAlign={'center'}>OPÇÕES</Th>
                     </Tr>
                   </Thead>
                   <Tbody>
                     {ativos.map(a => {
                       return (
                         <Tr key={a.id}>
-                          <Td>{a.acao.codigo}</Td>
-                          <Td>R${a.cotacao_atual}</Td>
-                          <Td>{a.objetivo}%</Td>
+                          <Td textAlign={'center'}>{a.id}</Td>
+                          <Td textAlign={'center'}>{a.codigo}</Td>
+                          <Td textAlign={'center'}>R$ {a.cotacao_atual}</Td>
+                          <Td textAlign={'center'}>{a.objetivo}%</Td>
                           <Td textAlign={'center'}>
-                            <Button colorScheme="blue" size="sm" margin={'2px'}>
+                            <Button
+                              colorScheme="blue"
+                              size="sm"
+                              margin={'2px'}
+                              onClick={() => editarAtivo(a)}
+                            >
                               Editar
                             </Button>
                             <Button colorScheme="red" size="sm" margin={'2px'}>
@@ -277,7 +380,12 @@ const GerenciarAtivos = () => {
             </Stack>
           </Box>
           <HStack justify={'center'} direction={'row'}>
-            <Button marginTop={'20px'} colorScheme="blue" size="sm">
+            <Button
+              marginTop={'20px'}
+              colorScheme="blue"
+              size="sm"
+              disabled={habilitaDesabilitaFormulario}
+            >
               Salvar Ativo(s)
             </Button>
           </HStack>

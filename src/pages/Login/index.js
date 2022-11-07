@@ -46,9 +46,9 @@ const Login = () => {
     formState: { errors },
   } = useForm({
     // defaultValues: {
-    //   email: 'analista@gmail.com',
+    //   email: 'cliente@gmail.com',
     //   senha: '123',
-    //   tipoAcesso: '1',
+    //   tipoAcesso: '2',
     // },
     resolver: yupResolver(schema),
   });

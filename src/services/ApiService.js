@@ -63,4 +63,16 @@ export default class ApiService {
     );
     return response.data;
   }
+
+  static async adicionarEditarAtivo(idCarteira, ativos) {
+    const response = await WebApi.post(`/carteira/${idCarteira}/ativo`, {
+      ativos: ativos,
+    });
+    return response.data;
+  }
+
+  static async deletarAtivo(idAtivo) {
+    const response = await WebApi.delete(`/ativo/${idAtivo}`);
+    return response.data;
+  }
 }

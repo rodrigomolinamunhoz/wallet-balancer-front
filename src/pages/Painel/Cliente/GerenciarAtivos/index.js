@@ -41,10 +41,9 @@ const schema = yup
       .min(0.01, 'Valor deve ser maior que 1 centavo!')
       .required('Campo obrigatório!'),
     objetivo: yup
-      .number()
+      .string()
       .transform(value => (isNaN(value) ? 0 : value))
-      .min(1, 'Digite valor igual ou maior que 1')
-      .max(100, 'Digite valor igual ou menor que 100')
+      .matches(/^[1-9][0-9]?$|^100$/, 'Digite um número entre 1 e 100')
       .required('Campo obrigatório!'),
   })
   .required();
@@ -121,7 +120,7 @@ const GerenciarAtivos = () => {
   const limparForm = () => {
     setTituloBotaoEditar(false);
     setHabilitaCampoAcao(false);
-    reset({ idAtivo: '', acao: '', cotacaoAtual: 0.0, objetivo: 1 });
+    reset({ idAtivo: '', acao: '', cotacaoAtual: '', objetivo: '' });
   };
 
   const listarAtivos = async idCarteira => {
@@ -277,15 +276,14 @@ const GerenciarAtivos = () => {
                       isDisabled={habilitaDesabilitaFormulario}
                     >
                       <FormLabel>COTAÇÃO ATUAL (R$)</FormLabel>
-                      <NumberInput
+                      <Input
                         id="cotacaoAtual"
                         name="cotacaoAtual"
-                        precision={2}
-                        defaultValue={0}
+                        type="number"
+                        step="any"
                         {...register('cotacaoAtual')}
                       >
-                        <NumberInputField />
-                      </NumberInput>
+                      </Input>
                       <FormErrorMessage>
                         {errors.cotacaoAtual && errors.cotacaoAtual.message}
                       </FormErrorMessage>
@@ -298,14 +296,14 @@ const GerenciarAtivos = () => {
                       isDisabled={habilitaDesabilitaFormulario}
                     >
                       <FormLabel>OBJETIVO (%)</FormLabel>
-                      <NumberInput
+                      <Input
                         id="objetivo"
                         name="objetivo"
-                        defaultValue={1}
+                        type="number"
+                        step="any"
                         {...register('objetivo')}
                       >
-                        <NumberInputField />
-                      </NumberInput>
+                      </Input>
                       <FormErrorMessage>
                         {errors.objetivo && errors.objetivo.message}
                       </FormErrorMessage>

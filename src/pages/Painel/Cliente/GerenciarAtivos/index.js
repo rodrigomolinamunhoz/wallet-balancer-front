@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import NavbarCliente from '../../../../components/NavbarCliente';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -22,8 +22,13 @@ import {
   Td,
   TableContainer,
   FormErrorMessage,
-  NumberInput,
-  NumberInputField,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
+  useDisclosure,
   useToast,
 } from '@chakra-ui/react';
 import ApiService from '../../../../services/ApiService';
@@ -59,6 +64,9 @@ const GerenciarAtivos = () => {
   const [habilitaCampoAcao, setHabilitaCampoAcao] = useState(true);
   const [tituloBotaoEditar, setTituloBotaoEditar] = useState(false);
   const loader = useLoader();
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const cancelRef = useRef();
+  const [idDelete, setidDelete] = useState(0);
 
   const {
     handleSubmit,
@@ -74,6 +82,29 @@ const GerenciarAtivos = () => {
     listarCarteira();
     listarAcoes();
   }, []);
+
+  const deletarAtivo = async () => {
+    try {
+      loader.setLoader(true);
+      //await ApiService.deletarAtivo(idDelete);
+      NotificationService.showSuccessAlert(
+        toast,
+        'Registro excluído com sucesso!'
+      );
+      atualizarPorcentagem(idDelete);
+    } catch (error) {
+      NotificationService.showApiResponseErrorAlert(toast, error.response);
+    } finally {
+      loader.setLoader(false);
+    }
+  };
+
+  const atualizarPorcentagem = async idDeletado => {
+    //buscar o cara na lista pelo idDelete pegar o objetivo.
+    //lista de ativos, pegar o ultimo e adicionar a porcentagem do que foi excluido
+    //chamar método de salvar
+    //listarAtivos
+  };
 
   const listarCarteira = async () => {
     try {
@@ -281,8 +312,7 @@ const GerenciarAtivos = () => {
                         type="number"
                         step="any"
                         {...register('cotacaoAtual')}
-                      >
-                      </Input>
+                      ></Input>
                       <FormErrorMessage>
                         {errors.cotacaoAtual && errors.cotacaoAtual.message}
                       </FormErrorMessage>
@@ -301,8 +331,7 @@ const GerenciarAtivos = () => {
                         type="number"
                         step="any"
                         {...register('objetivo')}
-                      >
-                      </Input>
+                      ></Input>
                       <FormErrorMessage>
                         {errors.objetivo && errors.objetivo.message}
                       </FormErrorMessage>
@@ -372,7 +401,15 @@ const GerenciarAtivos = () => {
                             >
                               Editar
                             </Button>
-                            <Button colorScheme="red" size="sm" margin={'2px'}>
+                            <Button
+                              onClick={() => {
+                                onOpen();
+                                setidDelete(a.id);
+                              }}
+                              colorScheme="red"
+                              size="sm"
+                              margin={'2px'}
+                            >
                               Excluir
                             </Button>
                           </Td>
@@ -397,6 +434,39 @@ const GerenciarAtivos = () => {
           </HStack>
         </Stack>
       </Flex>
+      <AlertDialog
+        isOpen={isOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={onClose}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Excluir Ativo
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              Você tem certeza que deseja excluir este ativo?
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={onClose}>
+                Cancelar
+              </Button>
+              <Button
+                colorScheme="red"
+                onClick={() => {
+                  deletarAtivo();
+                  onClose();
+                }}
+                ml={3}
+              >
+                Excluir
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </>
   );
 };

@@ -120,7 +120,6 @@ const GerenciarAtivos = () => {
   const limparForm = () => {
     setTituloBotaoEditar(false);
     setHabilitaCampoAcao(false);
-    reset({ idAtivo: '', acao: '', cotacaoAtual: '', objetivo: '' });
   };
 
   const listarAtivos = async idCarteira => {
@@ -320,6 +319,7 @@ const GerenciarAtivos = () => {
                     onClick={() => limparForm()}
                     colorScheme="blue"
                     size="sm"
+                    type="reset"
                     disabled={habilitaDesabilitaFormulario}
                   >
                     Limpar

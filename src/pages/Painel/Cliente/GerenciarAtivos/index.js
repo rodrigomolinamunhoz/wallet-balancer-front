@@ -58,6 +58,7 @@ const GerenciarAtivos = () => {
   const [carteiras, setCarteiras] = useState([]);
   const [idCarteira, setIdCarteira] = useState('');
   const [acoes, setAcoes] = useState([]);
+  const [acoesCombo, setAcoesCombo] = useState([]);
   const [ativos, setAtivos] = useState([]);
   const [habilitaDesabilitaFormulario, setHabilitaDesabilitaFormulario] =
     useState(true);
@@ -82,6 +83,10 @@ const GerenciarAtivos = () => {
     listarCarteira();
     listarAcoes();
   }, []);
+
+  useEffect(() => {
+    renderizarCampoAcao();
+  }, [ativos]);
 
   const deletarAtivo = async () => {
     try {
@@ -132,6 +137,14 @@ const GerenciarAtivos = () => {
     }
   };
 
+  const renderizarCampoAcao = () => {
+    var ativoAcoes = ativos.map(item => {
+      return item.acao_id;
+    });
+    var res = acoes.filter(item => !ativoAcoes.includes(item.idAcao));
+    setAcoesCombo(res);
+  };
+
   const adicionarEditarAtivo = async () => {
     try {
       loader.setLoader(true);
@@ -151,9 +164,11 @@ const GerenciarAtivos = () => {
   const limparForm = () => {
     setTituloBotaoEditar(false);
     setHabilitaCampoAcao(false);
+    reset({ idAtivo: 0 });
   };
 
   const listarAtivos = async idCarteira => {
+    document.getElementById('btLimpar').click();
     if (idCarteira) {
       setIdCarteira(idCarteira);
       setHabilitaDesabilitaFormulario(false);
@@ -189,11 +204,11 @@ const GerenciarAtivos = () => {
   };
 
   const onSubmit = values => {
-    if (values.idAtivo >= 0) {
+    if (tituloBotaoEditar) {
       var ativo = ativos.find(
         a => a.id === values.idAtivo && a.acao_id === parseInt(values.acao)
       );
-      ativo.objetivo = values.objetivo;
+      ativo.objetivo = parseInt(values.objetivo);
       ativo.cotacao_atual = values.cotacaoAtual;
       var ativosSemOAlterado = ativos.filter(a => a.id !== values.idAtivo);
       setAtivos([...ativosSemOAlterado, ativo]);
@@ -203,7 +218,7 @@ const GerenciarAtivos = () => {
         tipo_cadastro: 'N',
         acao_id: parseInt(values.acao),
         codigo: acoes.find(a => a.idAcao === parseInt(values.acao)).codigoAcao,
-        objetivo: values.objetivo,
+        objetivo: parseInt(values.objetivo),
         cotacao_atual: values.cotacaoAtual,
         quantidade: 0,
         carteira_id: parseInt(idCarteira),
@@ -212,15 +227,20 @@ const GerenciarAtivos = () => {
 
       setAtivos([...ativos, ativo]);
     }
+
+    document.getElementById('btLimpar').click();
   };
 
   const editarAtivo = ativo => {
-    setTituloBotaoEditar(true);
-    setHabilitaCampoAcao(true);
-    setValue('idAtivo', ativo.id);
-    setValue('acao', ativo.acao_id);
-    setValue('cotacaoAtual', ativo.cotacao_atual);
-    setValue('objetivo', ativo.objetivo);
+    setAcoesCombo(acoes);
+    setTimeout(() => {
+      setTituloBotaoEditar(true);
+      setHabilitaCampoAcao(true);
+      setValue('idAtivo', ativo.id);
+      setValue('acao', ativo.acao_id);
+      setValue('cotacaoAtual', ativo.cotacao_atual);
+      setValue('objetivo', ativo.objetivo);
+    }, '300');
   };
 
   return (
@@ -269,6 +289,7 @@ const GerenciarAtivos = () => {
                         id="idAtivo"
                         width={'45px'}
                         disabled={true}
+                        defaultValue={0}
                         {...register('idAtivo')}
                       />
                     </FormControl>
@@ -286,7 +307,7 @@ const GerenciarAtivos = () => {
                         placeholder="Selecione"
                         width={'250px'}
                       >
-                        {acoes.map(a => {
+                        {acoesCombo.map(a => {
                           return (
                             <option key={a.idAcao} value={a.idAcao}>
                               {a.codigoAcao}

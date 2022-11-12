@@ -63,11 +63,11 @@ const GerenciarAtivos = () => {
   const [habilitaDesabilitaFormulario, setHabilitaDesabilitaFormulario] =
     useState(true);
   const [habilitaCampoAcao, setHabilitaCampoAcao] = useState(true);
-  const [tituloBotaoEditar, setTituloBotaoEditar] = useState(false);
+  const [modoEditar, setModoEditar] = useState(false);
   const loader = useLoader();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = useRef();
-  const [idDelete, setidDelete] = useState(0);
+  const [ativoDeletado, setAtivoDeletado] = useState(null);
 
   const {
     handleSubmit,
@@ -88,15 +88,36 @@ const GerenciarAtivos = () => {
     renderizarCampoAcao();
   }, [ativos]);
 
-  const deletarAtivo = async () => {
+  const processarDelete = () => {
+    if (ativoDeletado.id === 0) {
+      deletarAtivoNaLista();
+      setAtivoDeletado(null);
+    } else {
+      deletarAtivoNoBanco();
+    }
+  };
+
+  const deletarAtivoNaLista = () => {
+    var novoArray = ativos.filter(
+      a => a.id !== ativoDeletado.id && a.acao_id !== ativoDeletado.acao_id
+    );
+    setAtivos(novoArray);
+  };
+
+  const deletarAtivoNoBanco = async () => {
     try {
       loader.setLoader(true);
-      //await ApiService.deletarAtivo(idDelete);
+      await ApiService.deletarAtivo(ativoDeletado.id);
       NotificationService.showSuccessAlert(
         toast,
         'Registro excluído com sucesso!'
       );
-      atualizarPorcentagem(idDelete);
+
+      rebalancearAtivos().then(v => {
+        listarAtivos(idCarteira).then(a => {
+          setAtivoDeletado(null);
+        });
+      });
     } catch (error) {
       NotificationService.showApiResponseErrorAlert(toast, error.response);
     } finally {
@@ -104,11 +125,19 @@ const GerenciarAtivos = () => {
     }
   };
 
-  const atualizarPorcentagem = async idDeletado => {
-    //buscar o cara na lista pelo idDelete pegar o objetivo.
-    //lista de ativos, pegar o ultimo e adicionar a porcentagem do que foi excluido
-    //chamar método de salvar
-    //listarAtivos
+  const rebalancearAtivos = async () => {
+    try {
+      loader.setLoader(true);
+      await ApiService.rebalancearAtivos(
+        CacheService.get(StorageKeys.IdCliente),
+        idCarteira,
+        ativoDeletado.objetivo
+      );
+    } catch (error) {
+      NotificationService.showApiResponseErrorAlert(toast, error.response);
+    } finally {
+      loader.setLoader(false);
+    }
   };
 
   const listarCarteira = async () => {
@@ -162,7 +191,7 @@ const GerenciarAtivos = () => {
   };
 
   const limparForm = () => {
-    setTituloBotaoEditar(false);
+    setModoEditar(false);
     setHabilitaCampoAcao(false);
     reset({ idAtivo: 0 });
   };
@@ -179,7 +208,6 @@ const GerenciarAtivos = () => {
           CacheService.get(StorageKeys.IdCliente),
           idCarteira
         );
-
         if (resultado.length > 0) {
           let novoArray = resultado.map(e => {
             e.tipo_cadastro = 'E';
@@ -198,13 +226,14 @@ const GerenciarAtivos = () => {
       }
     } else {
       setAtivos([]);
+      setIdCarteira('');
       setHabilitaDesabilitaFormulario(true);
       setHabilitaCampoAcao(true);
     }
   };
 
   const onSubmit = values => {
-    if (tituloBotaoEditar) {
+    if (modoEditar) {
       var ativo = ativos.find(
         a => a.id === values.idAtivo && a.acao_id === parseInt(values.acao)
       );
@@ -224,7 +253,6 @@ const GerenciarAtivos = () => {
         carteira_id: parseInt(idCarteira),
         cliente_id: parseInt(CacheService.get(StorageKeys.IdCliente)),
       };
-
       setAtivos([...ativos, ativo]);
     }
 
@@ -234,7 +262,7 @@ const GerenciarAtivos = () => {
   const editarAtivo = ativo => {
     setAcoesCombo(acoes);
     setTimeout(() => {
-      setTituloBotaoEditar(true);
+      setModoEditar(true);
       setHabilitaCampoAcao(true);
       setValue('idAtivo', ativo.id);
       setValue('acao', ativo.acao_id);
@@ -287,7 +315,7 @@ const GerenciarAtivos = () => {
                       <FormLabel>ID</FormLabel>
                       <Input
                         id="idAtivo"
-                        width={'45px'}
+                        width={'55px'}
                         disabled={true}
                         defaultValue={0}
                         {...register('idAtivo')}
@@ -381,7 +409,7 @@ const GerenciarAtivos = () => {
                     type="submit"
                     disabled={habilitaDesabilitaFormulario}
                   >
-                    {tituloBotaoEditar ? 'Editar' : 'Adicionar'}
+                    {modoEditar ? 'Editar' : 'Adicionar'}
                   </Button>
                 </HStack>
               </form>
@@ -425,7 +453,7 @@ const GerenciarAtivos = () => {
                             <Button
                               onClick={() => {
                                 onOpen();
-                                setidDelete(a.id);
+                                setAtivoDeletado(a);
                               }}
                               colorScheme="red"
                               size="sm"
@@ -477,7 +505,7 @@ const GerenciarAtivos = () => {
               <Button
                 colorScheme="red"
                 onClick={() => {
-                  deletarAtivo();
+                  processarDelete();
                   onClose();
                 }}
                 ml={3}

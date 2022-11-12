@@ -75,4 +75,14 @@ export default class ApiService {
     const response = await WebApi.delete(`/ativo/${idAtivo}`);
     return response.data;
   }
+
+  static async rebalancearAtivos(idCliente, idCarteira, objetivo) {
+    const response = await WebApi.post(
+      `/cliente/${idCliente}/carteira/${idCarteira}/rebalancear-ativos`,
+      {
+        objetivo: objetivo,
+      }
+    );
+    return response.data;
+  }
 }

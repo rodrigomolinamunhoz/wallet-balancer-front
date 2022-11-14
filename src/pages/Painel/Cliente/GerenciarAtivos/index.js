@@ -436,7 +436,7 @@ const GerenciarAtivos = () => {
                   <Tbody>
                     {ativos.map(a => {
                       return (
-                        <Tr key={a.id}>
+                        <Tr key={a.codigo}>
                           <Td textAlign={'center'}>{a.id}</Td>
                           <Td textAlign={'center'}>{a.codigo}</Td>
                           <Td textAlign={'center'}>R$ {a.cotacao_atual}</Td>

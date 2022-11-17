@@ -239,8 +239,7 @@ const GerenciarAtivos = () => {
       );
       ativo.objetivo = parseInt(values.objetivo);
       ativo.cotacao_atual = values.cotacaoAtual;
-      var ativosSemOAlterado = ativos.filter(a => a.id !== values.idAtivo);
-      setAtivos([...ativosSemOAlterado, ativo]);
+      setAtivos(ativos);
     } else {
       const ativo = {
         id: 0,

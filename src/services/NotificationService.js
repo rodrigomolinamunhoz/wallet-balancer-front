@@ -4,7 +4,7 @@ export default class NotificationService {
       toast({
         description: response.data.error.message,
         status: 'error',
-        duration: 9000,
+        duration: 4000,
         isClosable: true,
         position: 'top',
       });
@@ -12,7 +12,7 @@ export default class NotificationService {
       toast({
         description: `Ocorreu algum erro inesperado! Por favor, tente novamente mais tarde.`,
         status: 'error',
-        duration: 9000,
+        duration: 4000,
         isClosable: true,
         position: 'top',
       });
@@ -23,7 +23,7 @@ export default class NotificationService {
     toast({
       description: description,
       status: 'error',
-      duration: 9000,
+      duration: 4000,
       isClosable: true,
       position: 'top',
     });
@@ -33,7 +33,7 @@ export default class NotificationService {
     toast({
       description: description,
       status: 'success',
-      duration: 9000,
+      duration: 4000,
       isClosable: true,
       position: 'top',
     });

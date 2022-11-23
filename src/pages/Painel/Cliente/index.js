@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import NavbarCliente from '../../../components/NavbarCliente';
+import * as yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { useForm } from 'react-hook-form';
 import {
     Select,
     Stack,
@@ -28,17 +31,49 @@ import {
     AlertDialogContent,
     AlertDialogOverlay,
     useDisclosure,
+    Modal,
+    ModalOverlay,
+    ModalContent,
+    ModalHeader,
+    ModalFooter,
+    ModalBody,
+    ModalCloseButton,
+    Divider,
+    FormLabel,
+    FormErrorMessage,
 } from '@chakra-ui/react';
 import ApiService from '../../../services/ApiService';
 import { CacheService } from '../../../services/CacheService';
 import { StorageKeys } from '../../../constants/StorageKeys';
 import NotificationService from '../../../services/NotificationService';
 
+const schema = yup
+    .object({
+        acao: yup.string().required('Campo obrigatório!'),
+        ativo: yup.string().required('Campo obrigatório!'),
+        quantidade: yup
+            .string()
+            .transform(value => (isNaN(value) ? 0 : value))
+            .matches(/^[1-9]\d*$/, 'Digite um número inteiro maior que 0')
+            .required('Campo obrigatório!'),
+    })
+    .required();
+
 const PainelCliente = () => {
-    const toast = useToast();
-    const [carteiras, setCarteiras] = useState([]);
-    const { isOpen, onOpen, onClose } = useDisclosure()
+    const toast = useToast()
+    const [carteiras, setCarteiras] = useState([])
+    const { isOpen: isOpenAporte, onOpen: onOpenAporte, onClose: onCloseAporte } = useDisclosure()
+    const { isOpen: isOpenHistorico, onOpen: onOpenHistorico, onClose: onCloseHistorico } = useDisclosure()
+    const { isOpen: isOpenMovimentacao, onOpen: onOpenMovimentacao, onClose: onCloseMovimentacao } = useDisclosure()
     const cancelRef = React.useRef()
+
+    const {
+        handleSubmit,
+        register,
+        formState: { errors },
+    } = useForm({
+        resolver: yupResolver(schema),
+    });
 
     const listarCarteira = async () => {
         try {
@@ -51,9 +86,26 @@ const PainelCliente = () => {
         }
     };
 
+    const verificaRealizarAporte = () => {
+        var valor = document.getElementById('valorAporte').value
+        if (valor === '0' || valor === '') {
+            NotificationService.showErrorAlert(toast, 'O valor do aporte deve ser maior que ZERO')
+        } else if (parseInt(valor) < 0) {
+            NotificationService.showErrorAlert(toast, 'O valor do aporte não pode ser negativo')
+        }
+        else {
+            onOpenAporte()
+        }
+    };
+
+    const onSubmit = values => {
+        console.log(values);
+    };
+
     useEffect(() => {
         listarCarteira();
     }, []);
+
     return (
         <>
             <NavbarCliente />
@@ -79,7 +131,7 @@ const PainelCliente = () => {
                                     return (<option key={c.id}> {c.nome} </option>);
                                 })}
                             </Select>
-                            <Text>Total Carteira= R$X,XX</Text>
+                            <Text>Patrimônio= R$X,XX</Text>
                         </HStack>
                         <Stack>
                             <FormControl id="informarAporte">
@@ -90,7 +142,7 @@ const PainelCliente = () => {
                                     type="number"
                                     step="any"
                                 />
-                                <Button colorScheme="blue" margin={'2px'} onClick={() => { onOpen(); }}>CALCULAR</Button>
+                                <Button colorScheme="blue" margin={'15px'} onClick={() => { verificaRealizarAporte(); }}>CALCULAR</Button>
                             </FormControl>
                         </Stack>
                     </HStack>
@@ -151,21 +203,18 @@ const PainelCliente = () => {
                             </Select>
                         </HStack>
                         <HStack>
-                            <Button colorScheme="blue" margin={'2px'}>HISTÓRICO</Button>
-                            <Button colorScheme="blue" margin={'2px'}>INFORMAR NOVA TRANSAÇÃO</Button>
+                            <Button colorScheme="blue" margin={'2px'} onClick={() => { onOpenHistorico(); }}>HISTÓRICO</Button>
+                            <Button colorScheme="blue" margin={'2px'} onClick={() => { onOpenMovimentacao(); }}>INFORMAR NOVA MOVIMENTAÇÃO</Button>
                         </HStack>
                     </HStack>
                 </VStack>
             </Flex>
-            <AlertDialog
-                isOpen={isOpen}
-                leastDestructiveRef={cancelRef}
-                onClose={onClose}
-            >
+
+            <AlertDialog isOpen={isOpenAporte} leastDestructiveRef={cancelRef} onClose={onCloseAporte}>
                 <AlertDialogOverlay>
                     <AlertDialogContent>
                         <AlertDialogHeader fontSize="lg" fontWeight="bold">
-                            Atenção
+                            ATENÇÃO
                         </AlertDialogHeader>
                         <AlertDialogBody>
                             Verifique se a cotação dos ativos está atualizada.{<br />}
@@ -173,16 +222,101 @@ const PainelCliente = () => {
                         </AlertDialogBody>
 
                         <AlertDialogFooter>
-                            <Button ref={cancelRef} colorScheme="blue" onClick={onClose}>
-                                Não
+                            <Button ref={cancelRef} colorScheme="gray" onClick={onCloseAporte}>
+                                Voltar
                             </Button>
-                            <Button colorScheme="blue" onClick={() => { onClose(); }} ml={3}>
+                            <Button colorScheme="blue" onClick={() => { onCloseAporte(); }} ml={3}>
                                 Sim
                             </Button>
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialogOverlay>
             </AlertDialog>
+
+            <Modal isOpen={isOpenHistorico} onClose={onCloseHistorico}>
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader textAlign={'center'}>HISTORICO DE MOVIMENTAÇÕES</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody>
+                        <Divider />
+                        <TableContainer>
+                            <Table variant="simple" size='sm'>
+                                <Thead>
+                                    <Tr>
+                                        <Th textAlign={'center'}>ATIVO</Th>
+                                        <Th textAlign={'center'}>DATA</Th>
+                                        <Th textAlign={'center'}>TIPO</Th>
+                                        <Th textAlign={'center'}>QUANTIDADE</Th>
+                                    </Tr>
+                                </Thead>
+                                <Tbody>
+                                    <Tr>
+                                        <Td textAlign={'center'}>ABEV3</Td>
+                                        <Td textAlign={'center'}>05/02/2021</Td>
+                                        <Td textAlign={'center'}>Compra</Td>
+                                        <Td textAlign={'center'}>10</Td>
+                                    </Tr>
+                                </Tbody>
+                            </Table>
+                        </TableContainer>
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button colorScheme='gray' mr={3} onClick={onCloseHistorico}>Voltar</Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
+
+            <Modal isOpen={isOpenMovimentacao} onClose={onCloseMovimentacao}>
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader textAlign={'center'}>INFORMAR NOVA MOVIMENTAÇÃO</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody>
+                        <Divider />
+                        <form onSubmit={handleSubmit(onSubmit)} >
+                            <FormControl id="acao" isInvalid={errors.acao}>
+                                <FormLabel paddingTop={'3'}>Ação</FormLabel>
+                                <Select id="acao" placeholder='Selecione' {...register('acao')}>
+                                    <option>COMPRA</option>
+                                    <option>VENDA</option>
+                                </Select>
+                                <FormErrorMessage>
+                                    {errors.acao && errors.acao.message}
+                                </FormErrorMessage>
+                            </FormControl>
+                            <FormControl id="ativo" isInvalid={errors.ativo}>
+                                <FormLabel paddingTop={'2'}>Ativo</FormLabel>
+                                <Select id="ativo" placeholder='Selecione' {...register('ativo')}>
+                                    <option>ABEV3</option>
+                                </Select>
+                                <FormErrorMessage>
+                                    {errors.ativo && errors.ativo.message}
+                                </FormErrorMessage>
+                            </FormControl>
+                            <FormControl id="quantidade" isInvalid={errors.quantidade}>
+                                <FormLabel paddingTop={'2'}>Quantidade</FormLabel>
+                                <Input type="number" id="quantidade" {...register('quantidade')} />
+                                <FormErrorMessage>
+                                    {errors.quantidade && errors.quantidade.message}
+                                </FormErrorMessage>
+                            </FormControl>
+                            <Stack>
+                                <Stack
+                                    direction={{ base: 'column', sm: 'row' }}
+                                    align={'start'}
+                                    justify={'space-between'}
+                                ></Stack>
+                                <Button colorScheme='blue' mr={3} type={'submit'}>Salvar</Button>
+                            </Stack>
+                        </form>
+                    </ModalBody>
+
+                    <ModalFooter>
+                        <Button colorScheme='gray' mr={3} onClick={onCloseMovimentacao}>Voltar</Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
         </>
     )
 };

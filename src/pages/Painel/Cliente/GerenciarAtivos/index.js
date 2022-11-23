@@ -89,54 +89,29 @@ const GerenciarAtivos = () => {
   }, [ativos]);
 
   const processarDelete = () => {
-    if (ativoDeletado.id === 0) {
-      deletarAtivoNaLista();
-      setAtivoDeletado(null);
-    } else {
-      deletarAtivoNoBanco();
-    }
-  };
-
-  const deletarAtivoNaLista = () => {
-    var novoArray = ativos.filter(
-      a => a.id !== ativoDeletado.id && a.acao_id !== ativoDeletado.acao_id
-    );
-    setAtivos(novoArray);
-  };
-
-  const deletarAtivoNoBanco = async () => {
-    try {
-      loader.setLoader(true);
-      await ApiService.deletarAtivo(ativoDeletado.id);
-      NotificationService.showSuccessAlert(
+    if (ativoDeletado.quantidade > 0) {
+      NotificationService.showErrorAlert(
         toast,
-        'Registro excluído com sucesso!'
+        'Você possui uma quantidade de ações para este ativo. Zere sua posição para poder excluí-lo!'
       );
-
-      rebalancearAtivos().then(v => {
-        listarAtivos(idCarteira).then(a => {
-          setAtivoDeletado(null);
-        });
+    } else {
+      const newList = ativos.map(a => {
+        if (
+          a.id === ativoDeletado.id &&
+          a.acao_id === parseInt(ativoDeletado.acao_id) &&
+          a.tipo_cadastro !== 'R'
+        ) {
+          const updatedItem = {
+            ...a,
+            tipo_cadastro: 'R',
+          };
+          return updatedItem;
+        }
+        return a;
       });
-    } catch (error) {
-      NotificationService.showApiResponseErrorAlert(toast, error.response);
-    } finally {
-      loader.setLoader(false);
-    }
-  };
 
-  const rebalancearAtivos = async () => {
-    try {
-      loader.setLoader(true);
-      await ApiService.rebalancearAtivos(
-        CacheService.get(StorageKeys.IdCliente),
-        idCarteira,
-        ativoDeletado.objetivo
-      );
-    } catch (error) {
-      NotificationService.showApiResponseErrorAlert(toast, error.response);
-    } finally {
-      loader.setLoader(false);
+      setAtivos(newList);
+      setAtivoDeletado(null);
     }
   };
 
@@ -167,9 +142,11 @@ const GerenciarAtivos = () => {
   };
 
   const renderizarCampoAcao = () => {
-    var ativoAcoes = ativos.map(item => {
-      return item.acao_id;
-    });
+    var ativoAcoes = ativos
+      .filter(item => {
+        return item.tipo_cadastro !== 'R';
+      })
+      .map(item => item.acao_id);
     var res = acoes.filter(item => !ativoAcoes.includes(item.idAcao));
     setAcoesCombo(res);
   };
@@ -334,9 +311,9 @@ const GerenciarAtivos = () => {
                         placeholder="Selecione"
                         width={'250px'}
                       >
-                        {acoesCombo.map(a => {
+                        {acoesCombo.map((a, index) => {
                           return (
-                            <option key={a.idAcao} value={a.idAcao}>
+                            <option key={index} value={a.idAcao}>
                               {a.codigoAcao}
                             </option>
                           );
@@ -432,36 +409,40 @@ const GerenciarAtivos = () => {
                     </Tr>
                   </Thead>
                   <Tbody>
-                    {ativos.map(a => {
-                      return (
-                        <Tr key={a.codigo}>
-                          <Td textAlign={'center'}>{a.id}</Td>
-                          <Td textAlign={'center'}>{a.codigo}</Td>
-                          <Td textAlign={'center'}>R$ {a.cotacao_atual}</Td>
-                          <Td textAlign={'center'}>{a.objetivo}%</Td>
-                          <Td textAlign={'center'}>
-                            <Button
-                              colorScheme="blue"
-                              size="sm"
-                              margin={'2px'}
-                              onClick={() => editarAtivo(a)}
-                            >
-                              Editar
-                            </Button>
-                            <Button
-                              onClick={() => {
-                                onOpen();
-                                setAtivoDeletado(a);
-                              }}
-                              colorScheme="red"
-                              size="sm"
-                              margin={'2px'}
-                            >
-                              Excluir
-                            </Button>
-                          </Td>
-                        </Tr>
-                      );
+                    {ativos.map((a, index) => {
+                      if (a.tipo_cadastro === 'N' || a.tipo_cadastro === 'E') {
+                        return (
+                          <Tr key={index}>
+                            <Td textAlign={'center'}>{a.id}</Td>
+                            <Td textAlign={'center'}>{a.codigo}</Td>
+                            <Td textAlign={'center'}>R$ {a.cotacao_atual}</Td>
+                            <Td textAlign={'center'}>{a.objetivo}%</Td>
+                            <Td textAlign={'center'}>
+                              <Button
+                                colorScheme="blue"
+                                size="sm"
+                                margin={'2px'}
+                                onClick={() => editarAtivo(a)}
+                              >
+                                Editar
+                              </Button>
+                              <Button
+                                onClick={() => {
+                                  onOpen();
+                                  setAtivoDeletado(a);
+                                }}
+                                colorScheme="red"
+                                size="sm"
+                                margin={'2px'}
+                              >
+                                Excluir
+                              </Button>
+                            </Td>
+                          </Tr>
+                        );
+                      }
+
+                      return <Tr key={a.codigo}></Tr>;
                     })}
                   </Tbody>
                 </Table>

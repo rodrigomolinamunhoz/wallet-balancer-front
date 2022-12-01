@@ -75,4 +75,9 @@ export default class ApiService {
     const response = await WebApi.delete(`/ativo/${idAtivo}`);
     return response.data;
   }
+
+  static async listarSetores() {
+    const response = await WebApi.get(`/setores`);
+    return response.data;
+  }
 }

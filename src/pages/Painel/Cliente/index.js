@@ -41,6 +41,7 @@ import {
     Divider,
     FormLabel,
     FormErrorMessage,
+    Tfoot,
 } from '@chakra-ui/react';
 import ApiService from '../../../services/ApiService';
 import { CacheService } from '../../../services/CacheService';
@@ -54,7 +55,7 @@ const schema = yup
         quantidade: yup
             .string()
             .transform(value => (isNaN(value) ? 0 : value))
-            .matches(/^[1-9]\d*$/, 'Digite um número inteiro maior que 0')
+            .matches(/^[1-9]\d*$/, 'Quantidade inválida!')
             .required('Campo obrigatório!'),
     })
     .required();
@@ -62,6 +63,7 @@ const schema = yup
 const PainelCliente = () => {
     const toast = useToast()
     const [carteiras, setCarteiras] = useState([])
+    const [setores, setSetores] = useState([])
     const { isOpen: isOpenAporte, onOpen: onOpenAporte, onClose: onCloseAporte } = useDisclosure()
     const { isOpen: isOpenHistorico, onOpen: onOpenHistorico, onClose: onCloseHistorico } = useDisclosure()
     const { isOpen: isOpenMovimentacao, onOpen: onOpenMovimentacao, onClose: onCloseMovimentacao } = useDisclosure()
@@ -86,6 +88,15 @@ const PainelCliente = () => {
         }
     };
 
+    const listarSetores = async () => {
+        try {
+            const setores = await ApiService.listarSetores();
+            setSetores(setores);
+        } catch (error) {
+            NotificationService.showApiResponseErrorAlert(toast, error.response);
+        }
+    };
+
     const verificaRealizarAporte = () => {
         var valor = document.getElementById('valorAporte').value
         if (valor === '0' || valor === '') {
@@ -104,6 +115,7 @@ const PainelCliente = () => {
 
     useEffect(() => {
         listarCarteira();
+        listarSetores();
     }, []);
 
     return (
@@ -185,6 +197,14 @@ const PainelCliente = () => {
                                         <Td textAlign={'center'}>32,1</Td>
                                     </Tr>
                                 </Tbody>
+                                <Tfoot>
+                                    <Tr>
+                                        <Td></Td><Td></Td><Td></Td><Td></Td><Td></Td><Td></Td><Td></Td><Td></Td>
+                                        <Td>
+                                            <Button colorScheme="blue" size="xs">COMPRA SUGERIDA</Button>
+                                        </Td>
+                                    </Tr>
+                                </Tfoot>
                             </Table>
                         </TableContainer>
                     </Box>
@@ -199,7 +219,9 @@ const PainelCliente = () => {
                                 align={'left'}
                                 bg={useColorModeValue('white', 'gray.700')}
                             >
-                                <option>Setores dos ativos</option>
+                                {setores.map(s => {
+                                    return (<option key={s.id}> {s.descricao} </option>);
+                                })}
                             </Select>
                         </HStack>
                         <HStack>
@@ -269,51 +291,69 @@ const PainelCliente = () => {
 
             <Modal isOpen={isOpenMovimentacao} onClose={onCloseMovimentacao}>
                 <ModalOverlay />
-                <ModalContent>
+                <ModalContent maxWidth={'800px'} overflowY={'auto'}>
                     <ModalHeader textAlign={'center'}>INFORMAR NOVA MOVIMENTAÇÃO</ModalHeader>
                     <ModalCloseButton />
                     <ModalBody>
                         <Divider />
+
                         <form onSubmit={handleSubmit(onSubmit)} >
-                            <FormControl id="acao" isInvalid={errors.acao}>
-                                <FormLabel paddingTop={'3'}>Ação</FormLabel>
-                                <Select id="acao" placeholder='Selecione' {...register('acao')}>
-                                    <option>COMPRA</option>
-                                    <option>VENDA</option>
-                                </Select>
-                                <FormErrorMessage>
-                                    {errors.acao && errors.acao.message}
-                                </FormErrorMessage>
-                            </FormControl>
-                            <FormControl id="ativo" isInvalid={errors.ativo}>
-                                <FormLabel paddingTop={'2'}>Ativo</FormLabel>
-                                <Select id="ativo" placeholder='Selecione' {...register('ativo')}>
-                                    <option>ABEV3</option>
-                                </Select>
-                                <FormErrorMessage>
-                                    {errors.ativo && errors.ativo.message}
-                                </FormErrorMessage>
-                            </FormControl>
-                            <FormControl id="quantidade" isInvalid={errors.quantidade}>
-                                <FormLabel paddingTop={'2'}>Quantidade</FormLabel>
-                                <Input type="number" id="quantidade" {...register('quantidade')} />
-                                <FormErrorMessage>
-                                    {errors.quantidade && errors.quantidade.message}
-                                </FormErrorMessage>
-                            </FormControl>
-                            <Stack>
-                                <Stack
-                                    direction={{ base: 'column', sm: 'row' }}
-                                    align={'start'}
-                                    justify={'space-between'}
-                                ></Stack>
-                                <Button colorScheme='blue' mr={3} type={'submit'}>Salvar</Button>
-                            </Stack>
+                            <HStack alignItems={'bottom'} spacing={'4'}>
+                                <FormControl id="acao" isInvalid={errors.acao}>
+                                    <FormLabel paddingTop={'2'}>Ação</FormLabel>
+                                    <Select id="acao" placeholder='Selecione' {...register('acao')}>
+                                        <option>COMPRA</option>
+                                        <option>VENDA</option>
+                                    </Select>
+                                    <FormErrorMessage>
+                                        {errors.acao && errors.acao.message}
+                                    </FormErrorMessage>
+                                </FormControl>
+                                <FormControl id="ativo" isInvalid={errors.ativo}>
+                                    <FormLabel paddingTop={'2'}>Ativo</FormLabel>
+                                    <Select id="ativo" placeholder='Selecione' {...register('ativo')}>
+                                        <option>ABEV3</option>
+                                    </Select>
+                                    <FormErrorMessage>
+                                        {errors.ativo && errors.ativo.message}
+                                    </FormErrorMessage>
+                                </FormControl>
+                                <FormControl id="quantidade" isInvalid={errors.quantidade}>
+                                    <FormLabel paddingTop={'2'}>Quantidade</FormLabel>
+                                    <Input type="number" id="quantidade" {...register('quantidade')} />
+                                    <FormErrorMessage>
+                                        {errors.quantidade && errors.quantidade.message}
+                                    </FormErrorMessage>
+                                </FormControl>
+                                <Stack>
+                                    <Button colorScheme='blue' size={'sm'} mr={3} type={'submit'} marginTop={'48px'}>Adicionar</Button>
+                                </Stack>
+                            </HStack>
                         </form>
+                        <Divider height='30px' />
+                        <TableContainer>
+                            <Table variant="simple" size='sm'>
+                                <Thead>
+                                    <Tr>
+                                        <Th textAlign={'center'}>ATIVO</Th>
+                                        <Th textAlign={'center'}>TIPO</Th>
+                                        <Th textAlign={'center'}>QUANTIDADE</Th>
+                                    </Tr>
+                                </Thead>
+                                <Tbody>
+                                    <Tr>
+                                        <Td textAlign={'center'}>ABEV3</Td>
+                                        <Td textAlign={'center'}>Compra</Td>
+                                        <Td textAlign={'center'}>10</Td>
+                                    </Tr>
+                                </Tbody>
+                            </Table>
+                        </TableContainer>
                     </ModalBody>
 
                     <ModalFooter>
-                        <Button colorScheme='gray' mr={3} onClick={onCloseMovimentacao}>Voltar</Button>
+                        <Button colorScheme='blue' mr={1}>Salvar Movimentações</Button>
+                        <Button colorScheme='gray' mr={3} onClick={onCloseMovimentacao}>Cancelar</Button>
                     </ModalFooter>
                 </ModalContent>
             </Modal>

@@ -159,7 +159,9 @@ const GerenciarAtivos = () => {
         toast,
         'Registro atualizado com sucesso!'
       );
-      await listarAtivos(idCarteira);
+      setTimeout(async () => {
+        await listarAtivos(idCarteira);
+      }, '300');
     } catch (error) {
       NotificationService.showApiResponseErrorAlert(toast, error.response);
     } finally {

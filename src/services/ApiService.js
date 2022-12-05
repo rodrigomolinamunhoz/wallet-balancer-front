@@ -80,4 +80,18 @@ export default class ApiService {
     const response = await WebApi.get(`/setores`);
     return response.data;
   }
+
+  static async listarBalanceador(idCliente, idCarteira) {
+    const response = await WebApi.get(
+      `/cliente/${idCliente}/carteira/${idCarteira}/listar-balanceador`
+    );
+    return response.data;
+  }
+
+  static async listarHistorico(idCliente, idCarteira) {
+    const response = await WebApi.get(
+      `/cliente/${idCliente}/carteira/${idCarteira}/historico-ativos`
+    );
+    return response.data;
+  }
 }

@@ -68,6 +68,7 @@ const PainelCliente = () => {
   const [carteiras, setCarteiras] = useState([]);
   const [patrimonio, setPatrimonio] = useState(0);
   const [ativos, setAtivos] = useState([]);
+  const [ativosFiltrados, setAtivosFiltrados] = useState([]);
   const [setores, setSetores] = useState([]);
   const [historico, setHistorico] = useState([]);
   const {
@@ -130,6 +131,7 @@ const PainelCliente = () => {
           idCarteira
         );
         setAtivos(resultado.ativos);
+        setAtivosFiltrados(resultado.ativos);
         setPatrimonio(resultado.patrimonio);
       } catch (error) {
         NotificationService.showApiResponseErrorAlert(toast, error.response);
@@ -138,8 +140,23 @@ const PainelCliente = () => {
       }
     } else {
       setAtivos([]);
+      setAtivosFiltrados([]);
+      setPatrimonio(0);
     }
   };
+
+  const filtrarAtivos = async idSetor => {
+    if (idSetor === '') {
+      setAtivosFiltrados(ativos);
+    } else {
+      const listaFiltrada = ativos.filter(item => {
+        return item.setor_id === parseInt(idSetor);
+      });
+      setAtivosFiltrados(listaFiltrada);
+      console.log(listaFiltrada);
+    }
+
+  }
 
   const listarHistorico = async idCarteira => {
     if (idCarteira) {
@@ -272,7 +289,7 @@ const PainelCliente = () => {
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {ativos.map((a, index) => {
+                  {ativosFiltrados.map((a, index) => {
                     return (
                       <Tr key={index}>
                         <Td textAlign={'center'}>{a.codigo_acao}</Td>
@@ -321,6 +338,9 @@ const PainelCliente = () => {
                 placeholder="Selecione o setor"
                 width={'250px'}
                 align={'left'}
+                onChange={e => {
+                  filtrarAtivos(e.target.value);
+                }}
                 bg={useColorModeValue('white', 'gray.700')}
               >
                 {setores.map(s => {

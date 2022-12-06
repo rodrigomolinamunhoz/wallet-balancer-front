@@ -71,6 +71,7 @@ const PainelCliente = () => {
   const [ativosFiltrados, setAtivosFiltrados] = useState([]);
   const [setores, setSetores] = useState([]);
   const [historico, setHistorico] = useState([]);
+  const [habilitaCamposAporte, setHabilitaCamposAporte] = useState(true);
   const {
     isOpen: isOpenAporte,
     onOpen: onOpenAporte,
@@ -95,6 +96,14 @@ const PainelCliente = () => {
   } = useForm({
     resolver: yupResolver(schema),
   });
+
+  useEffect(() => {
+    if (ativos.length > 0) {
+      setHabilitaCamposAporte(false);
+    } else {
+      setHabilitaCamposAporte(true);
+    }
+  }, [ativos]);
 
   const listarCarteira = async () => {
     try {
@@ -237,7 +246,7 @@ const PainelCliente = () => {
                   );
                 })}
               </Select>
-              <Text>Patrimônio= R$ {patrimonio}</Text>
+              <Text>Patrimônio= R$ {patrimonio.toFixed(2)}</Text>
             </HStack>
             <Stack>
               <FormControl id="informarAporte">
@@ -247,10 +256,12 @@ const PainelCliente = () => {
                   placeholder={'Informar Aporte'}
                   type="number"
                   step="any"
+                  disabled={habilitaCamposAporte}
                 />
                 <Button
                   colorScheme="blue"
                   margin={'15px'}
+                  disabled={habilitaCamposAporte}
                   onClick={() => {
                     verificaRealizarAporte();
                   }}
@@ -338,6 +349,7 @@ const PainelCliente = () => {
                 placeholder="Selecione o setor"
                 width={'250px'}
                 align={'left'}
+                disabled={habilitaCamposAporte}
                 onChange={e => {
                   filtrarAtivos(e.target.value);
                 }}
@@ -356,6 +368,7 @@ const PainelCliente = () => {
               <Button
                 colorScheme="blue"
                 margin={'2px'}
+                disabled={habilitaCamposAporte}
                 onClick={() => {
                   onOpenHistorico();
                 }}
@@ -365,6 +378,7 @@ const PainelCliente = () => {
               <Button
                 colorScheme="blue"
                 margin={'2px'}
+                disabled={habilitaCamposAporte}
                 onClick={() => {
                   onOpenMovimentacao();
                 }}

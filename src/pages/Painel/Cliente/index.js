@@ -257,6 +257,10 @@ const PainelCliente = () => {
     reset({ tipoCompra: '', acao: '', quantidade: '' });
   };
 
+  const limparCampoFiltroSetor = () => {
+    document.getElementById('filtroSetor').value = '';
+  };
+
   return (
     <>
       <NavbarCliente />
@@ -277,9 +281,10 @@ const PainelCliente = () => {
                 placeholder="Selecione uma carteira"
                 width={'250px'}
                 bg={useColorModeValue('white', 'gray.700')}
-                onChange={e => {
-                  listarAtivos(e.target.value);
-                  listarHistorico(e.target.value);
+                onChange={async e => {
+                  await listarAtivos(e.target.value);
+                  await listarHistorico(e.target.value);
+                  limparCampoFiltroSetor();
                 }}
               >
                 {carteiras.map(c => {
@@ -388,7 +393,7 @@ const PainelCliente = () => {
             <HStack>
               <Text>Filtrar ativos por setor:</Text>
               <Select
-                id="sFiltroSetor"
+                id="filtroSetor"
                 name="filtroSetor"
                 placeholder="Selecione o setor"
                 width={'250px'}
@@ -626,10 +631,11 @@ const PainelCliente = () => {
             <Button
               colorScheme="blue"
               mr={1}
-              onClick={() => {
-                salvarMovimentacoes();
+              onClick={async () => {
+                await salvarMovimentacoes();
+                await listarAtivos(idCarteira);
+                await listarHistorico(idCarteira);
                 onCloseMovimentacao();
-                //listarAtivos(idCarteira);
               }}
               disabled={movimentacoes.length === 0}
             >

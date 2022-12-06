@@ -52,8 +52,8 @@ import { useLoader } from '../../../context/loaderProvider';
 
 const schema = yup
   .object({
+    tipoCompra: yup.string().required('Campo obrigatório!'),
     acao: yup.string().required('Campo obrigatório!'),
-    ativo: yup.string().required('Campo obrigatório!'),
     quantidade: yup
       .string()
       .transform(value => (isNaN(value) ? 0 : value))
@@ -72,6 +72,8 @@ const PainelCliente = () => {
   const [setores, setSetores] = useState([]);
   const [historico, setHistorico] = useState([]);
   const [habilitaCamposAporte, setHabilitaCamposAporte] = useState(true);
+  const [movimentacoes, setMovimentacoes] = useState([]);
+  const [idCarteira, setIdCarteira] = useState(0);
   const {
     isOpen: isOpenAporte,
     onOpen: onOpenAporte,
@@ -92,6 +94,7 @@ const PainelCliente = () => {
   const {
     handleSubmit,
     register,
+    reset,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
@@ -104,6 +107,11 @@ const PainelCliente = () => {
       setHabilitaCamposAporte(true);
     }
   }, [ativos]);
+
+  useEffect(() => {
+    listarCarteira();
+    listarSetores();
+  }, []);
 
   const listarCarteira = async () => {
     try {
@@ -135,6 +143,7 @@ const PainelCliente = () => {
     if (idCarteira) {
       try {
         loader.setLoader(true);
+        setIdCarteira(idCarteira);
         const resultado = await ApiService.listarBalanceador(
           CacheService.get(StorageKeys.IdCliente),
           idCarteira
@@ -151,6 +160,7 @@ const PainelCliente = () => {
       setAtivos([]);
       setAtivosFiltrados([]);
       setPatrimonio(0);
+      setIdCarteira(0);
     }
   };
 
@@ -162,10 +172,8 @@ const PainelCliente = () => {
         return item.setor_id === parseInt(idSetor);
       });
       setAtivosFiltrados(listaFiltrada);
-      console.log(listaFiltrada);
     }
-
-  }
+  };
 
   const listarHistorico = async idCarteira => {
     if (idCarteira) {
@@ -205,13 +213,49 @@ const PainelCliente = () => {
   };
 
   const onSubmit = values => {
-    console.log(values);
+    const ativo = ativos.find(a => {
+      return a.id === parseInt(values.acao);
+    });
+    const movimentacao = {
+      ativo_id: ativo.id,
+      acao_id: ativo.acao_id,
+      codigo_acao: ativo.codigo_acao,
+      tipo_compra: parseInt(values.tipoCompra),
+      quantidade: parseInt(values.quantidade),
+      carteira_id: ativo.carteira_id,
+      cliente_id: ativo.cliente_id,
+    };
+    setMovimentacoes([...movimentacoes, movimentacao]);
+    limparFormMovimentacao();
   };
 
-  useEffect(() => {
-    listarCarteira();
-    listarSetores();
-  }, []);
+  const excluirMovimentacao = id => {
+    const movimentacoesFiltradas = movimentacoes.filter(m => {
+      return m.id !== id;
+    });
+    setMovimentacoes(movimentacoesFiltradas);
+  };
+
+  const salvarMovimentacoes = async () => {
+    try {
+      loader.setLoader(true);
+      await ApiService.compraVenda(movimentacoes);
+      NotificationService.showSuccessAlert(
+        toast,
+        'Registro adicionado com sucesso!'
+      );
+      setMovimentacoes([]);
+      limparFormMovimentacao();
+    } catch (error) {
+      NotificationService.showApiResponseErrorAlert(toast, error.response);
+    } finally {
+      loader.setLoader(false);
+    }
+  };
+
+  const limparFormMovimentacao = () => {
+    reset({ tipoCompra: '', acao: '', quantidade: '' });
+  };
 
   return (
     <>
@@ -380,6 +424,7 @@ const PainelCliente = () => {
                 margin={'2px'}
                 disabled={habilitaCamposAporte}
                 onClick={() => {
+                  limparFormMovimentacao();
                   onOpenMovimentacao();
                 }}
               >
@@ -427,13 +472,12 @@ const PainelCliente = () => {
         </AlertDialogOverlay>
       </AlertDialog>
 
-      <Modal isOpen={isOpenHistorico} onClose={onCloseHistorico}>
+      <Modal isOpen={isOpenHistorico} scrollBehavior={'inside'}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader textAlign={'center'}>
-            HISTORICO DE MOVIMENTAÇÕES
+            HISTÓRICO DE MOVIMENTAÇÕES
           </ModalHeader>
-          <ModalCloseButton />
           <ModalBody>
             <Divider />
             <TableContainer>
@@ -473,18 +517,31 @@ const PainelCliente = () => {
         </ModalContent>
       </Modal>
 
-      <Modal isOpen={isOpenMovimentacao} onClose={onCloseMovimentacao}>
+      <Modal isOpen={isOpenMovimentacao}>
         <ModalOverlay />
         <ModalContent maxWidth={'800px'} overflowY={'auto'}>
           <ModalHeader textAlign={'center'}>
             INFORMAR NOVA MOVIMENTAÇÃO
           </ModalHeader>
-          <ModalCloseButton />
           <ModalBody>
             <Divider />
 
             <form onSubmit={handleSubmit(onSubmit)}>
               <HStack alignItems={'bottom'} spacing={'4'}>
+                <FormControl id="tipoCompra" isInvalid={errors.tipoCompra}>
+                  <FormLabel paddingTop={'2'}>Tipo</FormLabel>
+                  <Select
+                    id="tipoCompra"
+                    placeholder="Selecione"
+                    {...register('tipoCompra')}
+                  >
+                    <option value={1}>COMPRA</option>
+                    <option value={2}>VENDA</option>
+                  </Select>
+                  <FormErrorMessage>
+                    {errors.tipoCompra && errors.tipoCompra.message}
+                  </FormErrorMessage>
+                </FormControl>
                 <FormControl id="acao" isInvalid={errors.acao}>
                   <FormLabel paddingTop={'2'}>Ação</FormLabel>
                   <Select
@@ -492,24 +549,16 @@ const PainelCliente = () => {
                     placeholder="Selecione"
                     {...register('acao')}
                   >
-                    <option>COMPRA</option>
-                    <option>VENDA</option>
+                    {ativos.map((a, index) => {
+                      return (
+                        <option key={index} value={a.id}>
+                          {a.codigo_acao}
+                        </option>
+                      );
+                    })}
                   </Select>
                   <FormErrorMessage>
                     {errors.acao && errors.acao.message}
-                  </FormErrorMessage>
-                </FormControl>
-                <FormControl id="ativo" isInvalid={errors.ativo}>
-                  <FormLabel paddingTop={'2'}>Ativo</FormLabel>
-                  <Select
-                    id="ativo"
-                    placeholder="Selecione"
-                    {...register('ativo')}
-                  >
-                    <option>ABEV3</option>
-                  </Select>
-                  <FormErrorMessage>
-                    {errors.ativo && errors.ativo.message}
                   </FormErrorMessage>
                 </FormControl>
                 <FormControl id="quantidade" isInvalid={errors.quantidade}>
@@ -528,8 +577,8 @@ const PainelCliente = () => {
                     colorScheme="blue"
                     size={'sm'}
                     mr={3}
-                    type={'submit'}
                     marginTop={'48px'}
+                    type="submit"
                   >
                     Adicionar
                   </Button>
@@ -541,27 +590,59 @@ const PainelCliente = () => {
               <Table variant="simple" size="sm">
                 <Thead>
                   <Tr>
-                    <Th textAlign={'center'}>ATIVO</Th>
                     <Th textAlign={'center'}>TIPO</Th>
+                    <Th textAlign={'center'}>AÇÃO</Th>
                     <Th textAlign={'center'}>QUANTIDADE</Th>
+                    <Th textAlign={'center'}>OPÇÕES</Th>
                   </Tr>
                 </Thead>
                 <Tbody>
-                  <Tr>
-                    <Td textAlign={'center'}>ABEV3</Td>
-                    <Td textAlign={'center'}>Compra</Td>
-                    <Td textAlign={'center'}>10</Td>
-                  </Tr>
+                  {movimentacoes.map((m, index) => {
+                    return (
+                      <Tr key={index}>
+                        <Td textAlign={'center'}>
+                          {m.tipo_compra === 1 ? 'Compra' : 'Venda'}
+                        </Td>
+                        <Td textAlign={'center'}>{m.codigo_acao}</Td>
+                        <Td textAlign={'center'}>{m.quantidade}</Td>
+                        <Td textAlign={'center'}>
+                          <Button
+                            onClick={() => excluirMovimentacao(m.id)}
+                            colorScheme="red"
+                            size="sm"
+                          >
+                            Excluir
+                          </Button>
+                        </Td>
+                      </Tr>
+                    );
+                  })}
                 </Tbody>
               </Table>
             </TableContainer>
           </ModalBody>
 
           <ModalFooter>
-            <Button colorScheme="blue" mr={1}>
+            <Button
+              colorScheme="blue"
+              mr={1}
+              onClick={() => {
+                salvarMovimentacoes();
+                onCloseMovimentacao();
+                //listarAtivos(idCarteira);
+              }}
+              disabled={movimentacoes.length === 0}
+            >
               Salvar Movimentações
             </Button>
-            <Button colorScheme="gray" mr={3} onClick={onCloseMovimentacao}>
+            <Button
+              colorScheme="gray"
+              mr={3}
+              onClick={() => {
+                onCloseMovimentacao();
+                setMovimentacoes([]);
+              }}
+            >
               Cancelar
             </Button>
           </ModalFooter>

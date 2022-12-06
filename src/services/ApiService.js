@@ -94,4 +94,11 @@ export default class ApiService {
     );
     return response.data;
   }
+
+  static async compraVenda(movimentacoes) {
+    const response = await WebApi.put('/compra-venda', {
+      ativos: movimentacoes,
+    });
+    return response.data;
+  }
 }

@@ -101,4 +101,12 @@ export default class ApiService {
     });
     return response.data;
   }
+
+  static async balancearAtivos(idCliente, idCarteira, valorAporte) {
+    const response = await WebApi.get(
+      `/cliente/${idCliente}/carteira/${idCarteira}/balancear`,
+      { params: { valorAporte: valorAporte } }
+    );
+    return response.data;
+  }
 }

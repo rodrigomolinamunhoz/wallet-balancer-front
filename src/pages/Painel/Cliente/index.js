@@ -253,6 +253,29 @@ const PainelCliente = () => {
     }
   };
 
+  const balancearAtivos = async () => {
+    var valor = document.getElementById('valorAporte').value;
+    try {
+      loader.setLoader(true);
+      const resultado = await ApiService.balancearAtivos(
+        CacheService.get(StorageKeys.IdCliente),
+        idCarteira,
+        valor
+      );
+      setAtivos(resultado.ativos);
+      setAtivosFiltrados(resultado.ativos);
+      setPatrimonio(resultado.patrimonio);
+      NotificationService.showSuccessAlert(
+        toast,
+        'Quantidade de compra atualizada com sucesso!'
+      );
+    } catch (error) {
+      NotificationService.showApiResponseErrorAlert(toast, error.response);
+    } finally {
+      loader.setLoader(false);
+    }
+  };
+
   const limparFormMovimentacao = () => {
     reset({ tipoCompra: '', acao: '', quantidade: '' });
   };
@@ -364,7 +387,7 @@ const PainelCliente = () => {
                         <Td textAlign={'center'}>
                           {a.distancia_objetivo.toFixed(2)}%
                         </Td>
-                        <Td textAlign={'center'}>0</Td>
+                        <Td textAlign={'center'}>{a.quantidade_compra}</Td>
                       </Tr>
                     );
                   })}
@@ -465,8 +488,9 @@ const PainelCliente = () => {
               </Button>
               <Button
                 colorScheme="blue"
-                onClick={() => {
+                onClick={async () => {
                   onCloseAporte();
+                  await balancearAtivos();
                 }}
                 ml={3}
               >

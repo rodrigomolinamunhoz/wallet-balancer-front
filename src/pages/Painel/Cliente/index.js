@@ -363,6 +363,7 @@ const PainelCliente = () => {
                 <Button
                   colorScheme="blue"
                   margin={'15px'}
+                  marginBottom={'20px'}
                   disabled={habilitaCamposAporte}
                   onClick={() => {
                     verificaRealizarAporte();
@@ -454,7 +455,7 @@ const PainelCliente = () => {
               </Table>
             </TableContainer>
           </Box>
-          <HStack spacing={250} mx={'auto'} py={3} px={6}>
+          <HStack spacing={45} mx={'auto'} py={3} px={6}>
             <HStack>
               <Text>Filtrar ativos por setor:</Text>
               <Select
@@ -479,6 +480,19 @@ const PainelCliente = () => {
               </Select>
             </HStack>
             <HStack>
+            <Button
+                colorScheme="blue"
+                margin={'2px'}
+                disabled={habilitaCamposAporte}
+                onClick={() => {
+                  NotificationService.showSuccessAlert(
+                    toast,
+                    'Te puxa ai mano veio!'
+                  );
+                }}
+              >
+                ATUALIZAR COTAÇÕES
+              </Button>
               <Button
                 colorScheme="blue"
                 margin={'2px'}

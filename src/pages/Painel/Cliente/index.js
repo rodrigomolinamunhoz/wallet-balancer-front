@@ -72,6 +72,8 @@ const PainelCliente = () => {
   const [setores, setSetores] = useState([]);
   const [historico, setHistorico] = useState([]);
   const [habilitaCamposAporte, setHabilitaCamposAporte] = useState(true);
+  const [habilitaBotaoCompraSugerida, setHabilitaBotaoCompraSugerida] =
+    useState(false);
   const [movimentacoes, setMovimentacoes] = useState([]);
   const [idCarteira, setIdCarteira] = useState(0);
   const {
@@ -106,6 +108,11 @@ const PainelCliente = () => {
     } else {
       setHabilitaCamposAporte(true);
     }
+
+    const temQuantidadeCompra = ativos.find(element => {
+      return element.quantidade_compra > 0;
+    });
+    setHabilitaBotaoCompraSugerida(Boolean(temQuantidadeCompra));
   }, [ativos]);
 
   useEffect(() => {
@@ -269,11 +276,34 @@ const PainelCliente = () => {
         toast,
         'Quantidade de compra atualizada com sucesso!'
       );
+      document.getElementById('valorAporte').value = '';
     } catch (error) {
       NotificationService.showApiResponseErrorAlert(toast, error.response);
     } finally {
       loader.setLoader(false);
     }
+  };
+
+  const compraSugerida = async () => {
+    setMovimentacoes([]);
+
+    const movimentacoesSugeridas = ativos
+      .filter(i => i.quantidade_compra > 0)
+      .map(a => {
+        return {
+          ativo_id: a.id,
+          acao_id: a.acao_id,
+          codigo_acao: a.codigo_acao,
+          tipo_compra: 1,
+          quantidade: a.quantidade_compra,
+          carteira_id: a.carteira_id,
+          cliente_id: a.cliente_id,
+        };
+      });
+
+    setMovimentacoes(movimentacoesSugeridas);
+    onOpenMovimentacao();
+    document.getElementById('valorAporte').value = '';
   };
 
   const limparFormMovimentacao = () => {
@@ -378,8 +408,12 @@ const PainelCliente = () => {
                         <Td textAlign={'center'}>{a.codigo_acao}</Td>
                         <Td textAlign={'center'}>{a.descricao_setor}</Td>
                         <Td textAlign={'center'}>{a.quantidade}</Td>
-                        <Td textAlign={'center'}>{a.cotacao_atual}</Td>
-                        <Td textAlign={'center'}>{a.patrimonio}</Td>
+                        <Td textAlign={'center'}>
+                          R$ {a.cotacao_atual.toFixed(2)}
+                        </Td>
+                        <Td textAlign={'center'}>
+                          R$ {a.patrimonio.toFixed(2)}
+                        </Td>
                         <Td textAlign={'center'}>
                           {a.participacao_atual.toFixed(2)}%
                         </Td>
@@ -392,23 +426,31 @@ const PainelCliente = () => {
                     );
                   })}
                 </Tbody>
-                <Tfoot>
-                  <Tr>
-                    <Td></Td>
-                    <Td></Td>
-                    <Td></Td>
-                    <Td></Td>
-                    <Td></Td>
-                    <Td></Td>
-                    <Td></Td>
-                    <Td></Td>
-                    <Td>
-                      <Button colorScheme="blue" size="xs">
-                        COMPRA SUGERIDA
-                      </Button>
-                    </Td>
-                  </Tr>
-                </Tfoot>
+                {habilitaBotaoCompraSugerida ? (
+                  <Tfoot>
+                    <Tr>
+                      <Td></Td>
+                      <Td></Td>
+                      <Td></Td>
+                      <Td></Td>
+                      <Td></Td>
+                      <Td></Td>
+                      <Td></Td>
+                      <Td></Td>
+                      <Td>
+                        <Button
+                          colorScheme="blue"
+                          size="xs"
+                          onClick={async () => await compraSugerida()}
+                        >
+                          COMPRA SUGERIDA
+                        </Button>
+                      </Td>
+                    </Tr>
+                  </Tfoot>
+                ) : (
+                  <></>
+                )}
               </Table>
             </TableContainer>
           </Box>

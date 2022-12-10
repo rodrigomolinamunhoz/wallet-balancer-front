@@ -321,6 +321,60 @@ const PainelCliente = () => {
     });
   };
 
+  const atualizarAcao = async () => {
+    try {
+      loader.setLoader(true);
+      const ativosCodigos = ativos
+        .map((a, index) => {
+          if (index === 0) {
+            return a.codigo_acao;
+          }
+          return `%2C${a.codigo_acao}`;
+        })
+        .join('');
+
+      const result = await ApiService.valorAcao(ativosCodigos);
+      var retorno = ativos.map(a => {
+        const cotacao_atualizada = result.data.results.find(
+          r => r.symbol === a.codigo_acao
+        ).regularMarketPrice;
+        return {
+          id: a.id,
+          tipo_cadastro: 'E',
+          acao_id: a.acao_id,
+          codigo: a.codigo_acao,
+          objetivo: a.objetivo,
+          cotacao_atual: cotacao_atualizada,
+          quantidade: a.quantidade,
+          carteira_id: a.carteira_id,
+          cliente_id: a.cliente_id,
+        };
+      });
+
+      await adicionarEditarAtivo(retorno);
+      await listarAtivos(idCarteira);
+      NotificationService.showSuccessAlert(
+        toast,
+        'Registro atualizado com sucesso!'
+      );
+    } catch (error) {
+      NotificationService.showApiResponseErrorAlert(toast, error.response);
+    } finally {
+      loader.setLoader(false);
+    }
+  };
+
+  const adicionarEditarAtivo = async ativosCotacao => {
+    try {
+      loader.setLoader(true);
+      await ApiService.adicionarEditarAtivo(idCarteira, ativosCotacao);
+    } catch (error) {
+      NotificationService.showApiResponseErrorAlert(toast, error.response);
+    } finally {
+      loader.setLoader(false);
+    }
+  };
+
   return (
     <>
       <NavbarCliente />
@@ -492,10 +546,7 @@ const PainelCliente = () => {
                 margin={'2px'}
                 disabled={habilitaCamposAporte}
                 onClick={() => {
-                  NotificationService.showSuccessAlert(
-                    toast,
-                    'Te puxa ai mano veio!'
-                  );
+                  atualizarAcao();
                 }}
               >
                 ATUALIZAR COTAÇÕES

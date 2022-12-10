@@ -1,4 +1,5 @@
 import WebApi from './WebApi';
+import axios from 'axios';
 
 export default class ApiService {
   static async login(tipoAcesso, usuario, senha) {
@@ -108,5 +109,9 @@ export default class ApiService {
       { params: { valorAporte: valorAporte } }
     );
     return response.data;
+  }
+
+  static async valorAcao(parametro) {
+    return await axios.get(`https://brapi.dev/api/quote/${parametro}?range=1d`);
   }
 }

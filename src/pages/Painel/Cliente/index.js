@@ -314,6 +314,12 @@ const PainelCliente = () => {
     document.getElementById('filtroSetor').value = '';
   };
 
+  const formatCurrency = value => {
+    return value.toLocaleString('pt-br', {
+      minimumFractionDigits: 2,
+    });
+  };
+
   return (
     <>
       <NavbarCliente />
@@ -348,7 +354,7 @@ const PainelCliente = () => {
                   );
                 })}
               </Select>
-              <Text>Patrimônio= R$ {patrimonio.toFixed(2)}</Text>
+              <Text>Patrimônio= R$ {formatCurrency(patrimonio)}</Text>
             </HStack>
             <Stack>
               <FormControl id="informarAporte">
@@ -410,10 +416,10 @@ const PainelCliente = () => {
                         <Td textAlign={'center'}>{a.descricao_setor}</Td>
                         <Td textAlign={'center'}>{a.quantidade}</Td>
                         <Td textAlign={'center'}>
-                          R$ {a.cotacao_atual.toFixed(2)}
+                          R$ {formatCurrency(a.cotacao_atual)}
                         </Td>
                         <Td textAlign={'center'}>
-                          R$ {a.patrimonio.toFixed(2)}
+                          R$ {formatCurrency(a.patrimonio)}
                         </Td>
                         <Td textAlign={'center'}>
                           {a.participacao_atual.toFixed(2)}%

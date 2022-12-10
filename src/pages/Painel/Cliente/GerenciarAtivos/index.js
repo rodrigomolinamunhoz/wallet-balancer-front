@@ -417,7 +417,12 @@ const GerenciarAtivos = () => {
                           <Tr key={index}>
                             <Td textAlign={'center'}>{a.id}</Td>
                             <Td textAlign={'center'}>{a.codigo}</Td>
-                            <Td textAlign={'center'}>R$ {a.cotacao_atual}</Td>
+                            <Td textAlign={'center'}>
+                              R${' '}
+                              {a.cotacao_atual.toLocaleString('pt-br', {
+                                minimumFractionDigits: 2,
+                              })}
+                            </Td>
                             <Td textAlign={'center'}>{a.objetivo}%</Td>
                             <Td textAlign={'center'}>
                               <Button

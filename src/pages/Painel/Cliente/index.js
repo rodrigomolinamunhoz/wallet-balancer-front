@@ -236,9 +236,9 @@ const PainelCliente = () => {
     limparFormMovimentacao();
   };
 
-  const excluirMovimentacao = id => {
+  const excluirMovimentacao = ativo_id => {
     const movimentacoesFiltradas = movimentacoes.filter(m => {
-      return m.id !== id;
+      return m.ativo_id !== ativo_id;
     });
     setMovimentacoes(movimentacoesFiltradas);
   };
@@ -253,6 +253,7 @@ const PainelCliente = () => {
       );
       setMovimentacoes([]);
       limparFormMovimentacao();
+      onCloseMovimentacao();
     } catch (error) {
       NotificationService.showApiResponseErrorAlert(toast, error.response);
     } finally {
@@ -486,7 +487,7 @@ const PainelCliente = () => {
               </Select>
             </HStack>
             <HStack>
-            <Button
+              <Button
                 colorScheme="blue"
                 margin={'2px'}
                 disabled={habilitaCamposAporte}
@@ -698,7 +699,7 @@ const PainelCliente = () => {
                         <Td textAlign={'center'}>{m.quantidade}</Td>
                         <Td textAlign={'center'}>
                           <Button
-                            onClick={() => excluirMovimentacao(m.id)}
+                            onClick={() => excluirMovimentacao(m.ativo_id)}
                             colorScheme="red"
                             size="sm"
                           >
@@ -721,7 +722,6 @@ const PainelCliente = () => {
                 await salvarMovimentacoes();
                 await listarAtivos(idCarteira);
                 await listarHistorico(idCarteira);
-                onCloseMovimentacao();
               }}
               disabled={movimentacoes.length === 0}
             >
